@@ -1,3 +1,12 @@
 
 start npm run ios
+
 tailwind =  https://www.nativewind.dev/quick-starts/expo 
+
+navigation = https://reactnavigation.org
+    install for navigation:
+        npm install @react-navigation/native
+        npm install react-native-screens react-native-safe-area-context
+        npm install @react-navigation/native-stack
+
+
