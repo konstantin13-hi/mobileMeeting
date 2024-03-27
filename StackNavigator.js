@@ -5,15 +5,16 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './screens/HomeScreen';
 import ChatScreen from './screens/ChatScreen';
 import LoginScreen from './screens/LoginScreen';
+import { AuthProvider } from './hooks/useAuth';
+import useAuth from './hooks/useAuth';
 
 const Stack = createNativeStackNavigator();
 
 function StackNavigator() {
   
-  const user = true;
+    const  user  = useAuth()
     return (
-        <NavigationContainer>
-
+  
    
       <Stack.Navigator>
       {user ? (
@@ -26,7 +27,7 @@ function StackNavigator() {
 
 
       </Stack.Navigator>
-      </NavigationContainer>
+  
     )
   
 }
