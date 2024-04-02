@@ -10,3 +10,10 @@ navigation = https://reactnavigation.org
         npm install @react-navigation/native-stack
 
 
+gps checkins site = https://www.gps-coordinates.net 
+
+ gps : 
+   expo install expo-location
+   сохранения его выбора (например, "всегда", "во время использования приложения" или "никогда") в AsyncStorage.
+   npm install @react-native-async-storage/async-storage
+
