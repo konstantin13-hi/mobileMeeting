@@ -17,3 +17,5 @@ gps checkins site = https://www.gps-coordinates.net
    сохранения его выбора (например, "всегда", "во время использования приложения" или "никогда") в AsyncStorage.
    npm install @react-native-async-storage/async-storage
 
+
+

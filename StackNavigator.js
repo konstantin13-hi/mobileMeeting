@@ -16,7 +16,6 @@ function StackNavigator() {
   console.log("stack type " + permissionType);
   console.log("stack locat " + location);
 
-  // Отложенный рендеринг экрана LocationPermission до тех пор, пока permissionType не изменится
   if (permissionType === 'never') {
     return (
       <Stack.Navigator>
@@ -27,6 +26,7 @@ function StackNavigator() {
     return (
       <Stack.Navigator>
         <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Chat" component={ChatScreen} />
       </Stack.Navigator>
     );
   }
@@ -41,4 +41,4 @@ export default StackNavigator;
       //   </> */}
       {/* // ) : (
       //   <Stack.Screen name="Login" component={LoginScreen} />
-      // )} */}
+      // )} */} 
