@@ -1,6 +1,4 @@
 {
-    "welcome": "Welcome to my app!",
-    "login": "Login",
-    "home": "Home",
-    "chat": "Chat"
-  }
+  "change-language": "Change language",
+  "welcome": "Welcome to my app"
+}

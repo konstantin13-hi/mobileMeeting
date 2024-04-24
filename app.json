@@ -21,11 +21,6 @@
       "supportsTablet": true
       
     },
-    "locales": {
-      "en": "./locales/en.json",
-      "ru": "./locales/ru.json"
-
-    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
