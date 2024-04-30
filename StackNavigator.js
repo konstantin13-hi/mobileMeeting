@@ -7,29 +7,36 @@ import LoginScreen from './screens/LoginScreen';
 import LocationPermission from './screens/LocationPermission'; // Импортируем ваш компонент
 import useAuth from './hooks/useAuth';
 import {useLocationPermission} from './LocationPermissionContext';
+import CheckPage from './CheckPage'
 
 const Stack = createNativeStackNavigator();
 
 function StackNavigator() {
-  const user = useAuth();
-  const { permissionType, setPermissionType, location } = useLocationPermission();
-  console.log("stack type " + permissionType);
-  console.log("stack locat " + location);
+  // const user = useAuth();
+  // const { permissionType, setPermissionType, location } = useLocationPermission();
+return(
+  <Stack.Navigator >
+         <Stack.Screen name="Login" component={LoginScreen}>
+ 
+         </Stack.Screen>
 
-  if (permissionType === 'never') {
-    return (
-      <Stack.Navigator>
-        <Stack.Screen name="Loc" component={LocationPermission} />
-      </Stack.Navigator>
-    );
-  } else {
-    return (
-      <Stack.Navigator>
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Chat" component={ChatScreen} />
-      </Stack.Navigator>
-    );
-  }
+  </Stack.Navigator>
+)
+
+  // if (permissionType === 'never') {
+  //   return (
+  //     <Stack.Navigator>
+  //       <Stack.Screen name="Loc" component={LocationPermission} />
+  //     </Stack.Navigator>
+  //   );
+  // } else {
+  //   return (
+  //     <Stack.Navigator>
+  //       <Stack.Screen name="Home" component={HomeScreen} />
+  //       <Stack.Screen name="Chat" component={ChatScreen} />
+  //     </Stack.Navigator>
+  //   );
+  // }
 }
 
 export default StackNavigator;
