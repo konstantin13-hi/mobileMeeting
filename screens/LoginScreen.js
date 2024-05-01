@@ -1,9 +1,15 @@
 
 
 import React, { Component, useState } from 'react'
-import { Button, Text, View ,TouchableOpacity} from 'react-native'
+import { Button, Text, View ,TouchableOpacity,Alert} from 'react-native'
 import { StatusBar } from 'expo-status-bar';
 import {SafeAreaView, StyleSheet, TextInput,Input} from 'react-native';
+import {
+  updateProfile,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { auth } from "../firebase";
 
 export default function LoginScreen()  {
   // const[type,setType] = useState(2);
@@ -11,10 +17,11 @@ export default function LoginScreen()  {
   // const[mail,SetMail] = useState(null);
   // const[password,SetPasword] = useState(null);
 
-  const [type, setType] = useState(2);
+  const [type, setType] = useState(1);
   const [name, setName] = useState('');
   const [mail, setMail] = useState('');
   const [password, setPassword] = useState('');
+
 
 
     // Функция для обработки изменений в поле ввода имени
@@ -33,39 +40,33 @@ export default function LoginScreen()  {
     };
 
 
- 
-//   return (
-//     type === 1 ? (
-//       <View className="flex-1 items-center justify-center">
-//       <Text>Sing in</Text>
-//       <StatusBar style="auto" />
-//     </View>
-//     ) : (
-//       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-//         <Text className="text-blue-600">Sing Up</Text>
-//         <Text style={{ color: 'blue' }}>create a new Account</Text>
+    const signUp = async () => {
+      if (name.trim() === "" || mail.trim() === "" || password.trim() === "") {
+        return Alert.alert("Ohhh!!", "You have not entered all details");
+      }
+      try {
+        const response = await createUserWithEmailAndPassword(auth, mail, password);
+        console.log(response);
+      } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.error(errorCode, errorMessage);
+      }
+    };
 
-//         <TextInput value ={name==true ? "name":name} onChange={text =>setType(text)} type ="text" className="border-solid border-2 
-//         border-indigo-600 rounded-full w-3/5  px-2 m-5 py-2"></TextInput>
-//         <TextInput type="mail" className="border-solid border-2
-//         border-indigo-600 rounded-full w-3/5 mb-5 px-2 py-2">mail</TextInput>
-
-// <TextInput className="border-solid border-2
-//         border-indigo-600 rounded-full w-3/5 px-2 py-2">password</TextInput>
-
-// <Button 
-//       title="Registration"
-//       color="#2196F3"
-//       onPress={() => {
-//         setType(1)
-//       }}
-//     >
-//       <Text>Registration</Text>
-//     </Button>
-//         <Text>back</Text>
-//       </View>
-//     )
-//   );
+    const signIn = async (email, password) => {
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        console.log('Signed in user:', user);
+        // Дополнительные действия после успешной аутентификации, например, переход на другую страницу
+      } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.error('Error signing in:', errorCode, errorMessage);
+        // Обработка ошибок аутентификации, например, отображение сообщения пользователю
+      }
+    };
 
 return (
 
@@ -91,7 +92,8 @@ return (
 
         
 
-<TouchableOpacity className="
+<TouchableOpacity    onPress={() => signIn(mail, password)}
+        className="
        bg-indigo-600 rounded-full w-3/5 px-2 py-2  m-5 ">
       <Text className="text-center text-white solid font-bold">Log in</Text>
     </TouchableOpacity>
@@ -139,9 +141,7 @@ return (
     <Button 
       title="Registration"
       color="#2196F3"
-      onPress={() => {
-        setType(1);
-      }}
+      onPress={signUp}
     />
     
     {/* Подсказка для регистрации */}
@@ -159,20 +159,4 @@ return (
 
 }
 
-
-const styles = StyleSheet.create({
-  button: {
-    backgroundColor: '#2196F3',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
 

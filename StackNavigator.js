@@ -7,7 +7,7 @@ import LoginScreen from './screens/LoginScreen';
 import LocationPermission from './screens/LocationPermission'; // Импортируем ваш компонент
 import useAuth from './hooks/useAuth';
 import {useLocationPermission} from './LocationPermissionContext';
-import CheckPage from './CheckPage'
+
 
 const Stack = createNativeStackNavigator();
 
