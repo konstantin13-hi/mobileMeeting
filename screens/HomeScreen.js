@@ -7,7 +7,7 @@ import { getLocales } from 'expo-localization';
 import { useLocationPermission } from '../LocationPermissionContext';
 
 function HomeScreen({ navigation }){
-  const { permissionType, setPermissionType, location,setLocation, errorMsg,setErrorMsg } = useLocationPermission();
+
   const deviceLanguage = getLocales()[0].languageCode;
   console.log(deviceLanguage);
 
@@ -16,11 +16,7 @@ function HomeScreen({ navigation }){
     return (
       <View>
         <Text> Home </Text>
-        {location && (
-        <Text>
-          Latitude: {location.coords.latitude}, Longitude: {location.coords.longitude}
-        </Text>
-      )}
+
 
 
         <Button

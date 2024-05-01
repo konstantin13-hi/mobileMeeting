@@ -5,20 +5,27 @@ import HomeScreen from './screens/HomeScreen';
 import ChatScreen from './screens/ChatScreen';
 import LoginScreen from './screens/LoginScreen';
 import LocationPermission from './screens/LocationPermission'; // Импортируем ваш компонент
-import useAuth from './hooks/useAuth';
+
 import {useLocationPermission} from './LocationPermissionContext';
+import useHookAuth from './hooks/useAuth';
 
 
 const Stack = createNativeStackNavigator();
 
 function StackNavigator() {
-  // const user = useAuth();
+  const {user} = useHookAuth();
   // const { permissionType, setPermissionType, location } = useLocationPermission();
+  console.log(user);
 return(
   <Stack.Navigator >
-         <Stack.Screen name="Login" component={LoginScreen}>
- 
-         </Stack.Screen>
+  
+
+{user ? (
+        <Stack.Screen name="Home" component={HomeScreen} />
+      ) : (
+        <Stack.Screen name="Login" component={LoginScreen} />
+      )}
+      
 
   </Stack.Navigator>
 )

@@ -1,6 +1,6 @@
 
 
-import React, { Component, useState } from 'react'
+import React, { Component, useContext, useState } from 'react'
 import { Button, Text, View ,TouchableOpacity,Alert} from 'react-native'
 import { StatusBar } from 'expo-status-bar';
 import {SafeAreaView, StyleSheet, TextInput,Input} from 'react-native';
@@ -10,6 +10,7 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { auth } from "../firebase";
+import useHookAuth, {AuthContext} from "../hooks/useAuth"
 
 export default function LoginScreen()  {
   // const[type,setType] = useState(2);
@@ -21,6 +22,9 @@ export default function LoginScreen()  {
   const [name, setName] = useState('');
   const [mail, setMail] = useState('');
   const [password, setPassword] = useState('');
+  const {createUserInStorage } = useHookAuth();
+
+  
 
 
 
@@ -58,7 +62,11 @@ export default function LoginScreen()  {
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        console.log('Signed in user:', user);
+        createUserInStorage(user.email);
+      
+  
+      
+        console.log('Signed in user:', user.email);
         // Дополнительные действия после успешной аутентификации, например, переход на другую страницу
       } catch (error) {
         const errorCode = error.code;
