@@ -19,3 +19,11 @@ gps checkins site = https://www.gps-coordinates.net
 
 
 
+может придеться удалить:
+   "react-native-gesture-handler": "~2.14.0", 
+     "@react-navigation/stack": "^6.3.29",
+
+
+
+
+
