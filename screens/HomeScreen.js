@@ -9,12 +9,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'react-native';
 import{ChatIcon} from '../icons/ChatIcon';
 import { useState } from 'react';
+import { useRef } from 'react';
 
 
 
 import { StyleSheet } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Swiper from 'react-native-deck-swiper';
+import HeartIcon from '../icons/HeartIcon';
+import CancelIcon from '../icons/CancelIcon';
+import BackIcon from '../icons/BackIcon';
 
 
 const DUMMY_DATA = [
@@ -48,18 +52,9 @@ function HomeScreen({ navigation }) {
   const deviceLanguage = getLocales()[0].languageCode;
   const [allCardsShown, setAllCardsShown] = useState(false);
 
-  const renderCard = (card, index) => {
-    return (
-      <View className="bg-red h-3/4 rounded-xl">
-        <Image source={{ uri: card.photoURL }} style={{ flex: 1, width: null, height: null }} />
-        <Text>{card.displayName}</Text>
-      </View>
-    );
-  };
-
   const renderNoMoreCards = () => {
     return (
-      <View className="bg-red h-3/4 rounded-xl">
+      <View className="h-3/4 rounded-xl">
         <Image
           source={{ uri: "https://w0.peakpx.com/wallpaper/341/905/HD-wallpaper-where-the-mask-sad-emoji.jpg" }}
           style={{ flex: 1, width: null, height: null }}
@@ -68,10 +63,53 @@ function HomeScreen({ navigation }) {
       </View>
     );
   };
+  const swiperRef = useRef(null);
+  const [viewedCards, setViewedCards] = useState([]); // Список просмотренных карточек
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const onSwipedLeft = () => {
+    const newIndex = currentIndex + 1;
+    setViewedCards([...viewedCards, currentIndex]); // Добавляем текущую карточку в список просмотренных
+    setCurrentIndex(newIndex);
+  };
+
+  const onSwipedRight = () => {
+    const newIndex = currentIndex + 1;
+    setViewedCards([...viewedCards, currentIndex]);
+    setCurrentIndex(newIndex);
+  };
+
+  const swipeLeft = () => {
+    swiperRef.current.swipeLeft();
+  };
+
+  const swipeRight = () => {
+    swiperRef.current.swipeRight();
+  };
+
+  const returnCard = () => {
+    if (viewedCards.length > 0) { // Проверяем, есть ли просмотренные карточки
+      const previousIndex = viewedCards.pop(); // Получаем индекс предыдущей карточки из списка
+      setCurrentIndex(previousIndex); // Устанавливаем индекс предыдущей карточки
+    }
+  };
+
+  const renderCard = (card, index) => {
+    return (
+      <View className="h-3/4 rounded-xl">
+        <Image source={{ uri: card.photoURL }}  style={{ flex: 1, width: null, height: null }}/>
+        <Text>{card.displayName}</Text>
+      </View>
+    );
+  };
+  const swipeBack =()=> {
+    swiperRef.current.swipeBack();
+  }
 
   return (
-    <SafeAreaView className="flex-1">
-      <View className="flex-row justify-between items-center ml-2 mr-2">
+    <SafeAreaView className="relative h-screen w-screen">
+      
+      <View className=" flex-row justify-between items-center ml-2 mr-2">
         <TouchableOpacity>
           <MaterialIcons name="account-circle" size={40} color="gray" onPress={() => navigation.navigate('Account')} />
         </TouchableOpacity>
@@ -83,17 +121,23 @@ function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      <View style={{ flex: 1 }}>
+      <View>
         <Swiper
+     
           cards={DUMMY_DATA}
-          stackSize={3}
+          stackSize={2}
           animateCardOpacity
-          containerStyle={{ backgroundColor: 'transparent' }}
+          ref={swiperRef}
+          onSwipedLeft={onSwipedLeft}
+          onSwipedRight={onSwipedRight}
+      
+          // containerStyle={{ backgroundColor: 'transparent' }}
           renderCard={renderCard}
           onSwipedAll={() => setAllCardsShown(true)}
-          cardIndex={0}
+          cardIndex={currentIndex} // Используем индекс текущей карточки
           useViewOverflow={Platform.OS === 'ios'}
           animateOverlayLabelsOpacity
+         
           overlayLabels={{
             bottom: {
               title: 'BLEAH',
@@ -166,9 +210,28 @@ function HomeScreen({ navigation }) {
           }}
           
           swipeBackCard
-        />
+          
+        > 
+         <TouchableOpacity >
+         <Button onPress={() => this.swiper.swipeBack()} title='Swipe Backsdsdsds' className="h-10"/>
+         </TouchableOpacity>
+     
+         </Swiper>
         {allCardsShown && renderNoMoreCards()}
+       
       </View>
+      <View className="absolute bottom-10  w-screen flex-row justify-between p-5">
+        <TouchableOpacity onPress={swipeBack}>
+            <BackIcon size={34}/>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={swipeLeft}>
+            <CancelIcon size={34} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={swipeRight}>
+            <HeartIcon size={34}/>
+          </TouchableOpacity>
+        </View>
+
     </SafeAreaView>
   );
 }
