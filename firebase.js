@@ -4,7 +4,7 @@ import { initializeApp } from "firebase/app";
 // https://firebase.google.com/docs/web/setup#available-libraries
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { EmailAuthCredential, EmailAuthProvider } from "firebase/auth/cordova";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore ,serverTimestamp} from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -19,5 +19,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth();
-export { app, auth, createUserWithEmailAndPassword };
+const db = getFirestore();
+const timestamp = serverTimestamp();
+export { app, auth, createUserWithEmailAndPassword ,db,timestamp};
 

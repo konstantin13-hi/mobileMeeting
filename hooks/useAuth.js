@@ -4,6 +4,8 @@ import { createContext, useContext, useState } from 'react';
 import { Text, View } from 'react-native'
 import { useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "../firebase";
 
 
 const AuthContext = createContext({
@@ -13,23 +15,38 @@ const AuthContext = createContext({
 
 export const AuthProvider = ({children}) => {
    const[user,setUser] = useState(null);
-   const[loading,setLoading] = useState(false)
+   const [loading, setLoading] = useState(false);
+   const [loadingInitial, setLoadingInitial] = useState(true);
 
-   useEffect(() => {
-    // При загрузке компонента, проверяем наличие сохраненного пользователя в AsyncStorage
-    const fetchUser = async () => {
-      try {
-        const savedUser = await AsyncStorage.getItem('user');
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
-        }
-      } catch (error) {
-        // console.error('Error fetching user from AsyncStorage:', error);
-      } finally {
-        setLoading(false);
+  //  useEffect(() => {
+  //   // При загрузке компонента, проверяем наличие сохраненного пользователя в AsyncStorage
+  //   const fetchUser = async () => {
+  //     try {
+  //       const savedUser = await AsyncStorage.getItem('user');
+  //       if (savedUser) {
+  //         setUser(JSON.parse(savedUser));
+  //       }
+  //     } catch (error) {
+  //       // console.error('Error fetching user from AsyncStorage:', error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchUser();
+  // }, []);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        setUser(null);
       }
-    };
-    fetchUser();
+      setLoadingInitial(false);
+      setLoading(false);
+    });
+
+    return unsubscribe;
   }, []);
 
   const updateUser = async (newUser) => {
@@ -52,7 +69,7 @@ export const AuthProvider = ({children}) => {
   };
 
 
-   return (<AuthContext.Provider value={{user,setUser,loading,setLoading,updateUser,createUserInStorage }}>
+   return (<AuthContext.Provider value={{user,setUser,loading,setLoading,updateUser,createUserInStorage,loadingInitial, setLoadingInitial }}>
     {children}
 
    </AuthContext.Provider>)

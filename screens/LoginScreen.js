@@ -23,6 +23,7 @@ export default function LoginScreen()  {
   const [mail, setMail] = useState('');
   const [password, setPassword] = useState('');
   const {createUserInStorage } = useHookAuth();
+  const { loading, setLoading } = useHookAuth();
 
   
 
@@ -49,8 +50,11 @@ export default function LoginScreen()  {
         return Alert.alert("Ohhh!!", "You have not entered all details");
       }
       try {
-        const response = await createUserWithEmailAndPassword(auth, mail, password);
+         createUserWithEmailAndPassword(auth, mail, password)
+        .then(({ user }) => {
+          updateProfile(user, { displayName: name });
         console.log(response);
+      })
       } catch (error) {
         const errorCode = error.code;
         const errorMessage = error.message;
@@ -58,23 +62,30 @@ export default function LoginScreen()  {
       }
     };
 
-    const signIn = async (email, password) => {
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        createUserInStorage(user.email);
-      
-  
-      
-        console.log('Signed in user:', user.email);
-        // Дополнительные действия после успешной аутентификации, например, переход на другую страницу
-      } catch (error) {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.error('Error signing in:', errorCode, errorMessage);
-        // Обработка ошибок аутентификации, например, отображение сообщения пользователю
+    const signIn = () => {
+      if (mail.trim() === "" || password.trim === "") {
+        return Alert.alert("Ohhh!!", "You have not entered all details");
       }
+      setLoading(true);
+  
+      signInWithEmailAndPassword(auth, mail, password)
+        .then((userCredential) => {
+          setLoading(false);
+        })
+        .catch((error) => {
+          setLoading(false);
+        });
     };
+
+    if (loading) {
+      return (
+        <View  className="flex-1 justify-center items-center">
+          <Text className="font-semibold text-red-400 text-2xl">
+            Loading....
+          </Text>
+        </View>
+      );
+    }
 
 return (
 

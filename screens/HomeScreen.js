@@ -113,9 +113,13 @@ function HomeScreen({ navigation }) {
         <TouchableOpacity>
           <MaterialIcons name="account-circle" size={40} color="gray" onPress={() => navigation.navigate('Account')} />
         </TouchableOpacity>
+        <TouchableOpacity onPress={()=> navigation.navigate('Modal')}> 
+
         <View style={{ height: 60, width: 60 }}>
           <Image source={require('../img/kisspng.png')} style={{ flex: 1, width: null, height: null, resizeMode: 'cover', borderRadius: 8 }} />
         </View>
+        </TouchableOpacity>
+       
         <TouchableOpacity onPress={() => navigation.navigate('Chat')}>
           <ChatIcon />
         </TouchableOpacity>

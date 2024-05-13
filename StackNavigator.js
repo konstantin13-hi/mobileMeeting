@@ -35,16 +35,14 @@ return(
               <Stack.Screen name="Account" component={Account} options={{ headerShown: true }}/>
         </Stack.Group>
 
-      {/* <Stack.Group screenOptions={{ presentation: 'modal', ...TransitionPresets.ModalPresentationIOS  }}>
+      <Stack.Group screenOptions={{ presentation: 'modal' }}>
            <Stack.Screen name="Modal" component={ModalScreen} />
 
      </Stack.Group>
 
-     <Stack.Group>
-     screenOptions={{presentation:"transparenModal",
-      ...TransitionPresets.ModalPresentationIOS,}}
+     <Stack.Group >
     <Stack.Screen name="Match" component={MatchScreen}/>
-    </Stack.Group> */}
+    </Stack.Group>
      </>
 
        
