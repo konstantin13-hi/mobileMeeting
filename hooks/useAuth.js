@@ -68,8 +68,15 @@ export const AuthProvider = ({children}) => {
     }
   };
 
+  const logout = () => {
+    signOut(auth).then(() => {
+      setUser(null);
+    });
+  };
 
-   return (<AuthContext.Provider value={{user,setUser,loading,setLoading,updateUser,createUserInStorage,loadingInitial, setLoadingInitial }}>
+
+
+   return (<AuthContext.Provider value={{logout,user,setUser,loading,setLoading,updateUser,createUserInStorage,loadingInitial, setLoadingInitial}}>
     {children}
 
    </AuthContext.Provider>)
