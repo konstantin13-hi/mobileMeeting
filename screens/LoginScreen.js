@@ -53,7 +53,7 @@ export default function LoginScreen()  {
          createUserWithEmailAndPassword(auth, mail, password)
         .then(({ user }) => {
           updateProfile(user, { displayName: name });
-        console.log(response);
+     
       })
       } catch (error) {
         const errorCode = error.code;

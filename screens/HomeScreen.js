@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component ,useLayoutEffect } from 'react'
 import { Text, View,Button, TouchableOpacity,Platform} from 'react-native'
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -10,7 +10,19 @@ import { Image } from 'react-native';
 import{ChatIcon} from '../icons/ChatIcon';
 import { useState } from 'react';
 import { useRef } from 'react';
-
+import { ActivityIndicator } from 'react-native';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
+import { db, timestamp } from "../firebase";
+import { useEffect } from 'react';
 
 
 import { StyleSheet } from 'react-native';
@@ -19,6 +31,7 @@ import Swiper from 'react-native-deck-swiper';
 import HeartIcon from '../icons/HeartIcon';
 import CancelIcon from '../icons/CancelIcon';
 import BackIcon from '../icons/BackIcon';
+import useHookAuth from '../hooks/useAuth';
 
 
 const DUMMY_DATA = [
@@ -51,6 +64,16 @@ const DUMMY_DATA = [
 function HomeScreen({ navigation }) {
   const deviceLanguage = getLocales()[0].languageCode;
   const [allCardsShown, setAllCardsShown] = useState(false);
+  const {user} = useHookAuth();
+  const [profiles,setProfiles] = useState([]);
+
+  useLayoutEffect(() => {
+    getDoc(doc(db, "users", user.uid)).then((snapShot) => {
+      if (!snapShot.exists()) {
+        navigation.navigate("Modal");
+      }
+    });
+  }, []);
 
   const renderNoMoreCards = () => {
     return (
@@ -93,6 +116,41 @@ function HomeScreen({ navigation }) {
       setCurrentIndex(previousIndex); // Устанавливаем индекс предыдущей карточки
     }
   };
+  // useEffect(() => {
+  //   let unsub ;
+  //     const fetchCards = async () =>{
+  //     unsub = onSnapshot(collection(db, "users"), (snapShot) => {
+  //       setProfiles(
+  //         snapShot.docs
+  //           .map((doc) => ({
+  //             id: doc.id,
+  //             ...doc.data(),
+  //           }))
+  //       );
+  //     });
+  //   }
+  //   fetchCards();
+
+  //   return unsub;
+  // }, []);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'users'));
+        const usersData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setProfiles(usersData);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
 
   const renderCard = (card, index) => {
     return (
@@ -125,105 +183,110 @@ function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
+      {profiles.length === 0 ? (
+      <ActivityIndicator size="large" color="#0000ff" />
+    ) : (
       <View>
-        <Swiper
-     
-          cards={DUMMY_DATA}
-          stackSize={2}
-          animateCardOpacity
-          ref={swiperRef}
-          onSwipedLeft={onSwipedLeft}
-          onSwipedRight={onSwipedRight}
-      
-          // containerStyle={{ backgroundColor: 'transparent' }}
-          renderCard={renderCard}
-          onSwipedAll={() => setAllCardsShown(true)}
-          cardIndex={currentIndex} // Используем индекс текущей карточки
-          useViewOverflow={Platform.OS === 'ios'}
-          animateOverlayLabelsOpacity
-         
-          overlayLabels={{
-            bottom: {
-              title: 'BLEAH',
-              style: {
-                label: {
-                  backgroundColor: 'black',
-                  borderColor: 'black',
-                  color: 'white',
-                  borderWidth: 1,
-                },
-                wrapper: {
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                },
-              },
-            },
-            left: {
-              title: 'NOPE',
-              style: {
-                label: {
-                  backgroundColor: 'black',
-                  borderColor: 'black',
-                  color: 'white',
-                  borderWidth: 1,
-                },
-                wrapper: {
-                  flexDirection: 'column',
-                  alignItems: 'flex-end',
-                  justifyContent: 'flex-start',
-                  marginTop: 30,
-                  marginLeft: -30,
-                },
-              },
-            },
-            right: {
-              title: 'LIKE',
-              style: {
-                label: {
-                  backgroundColor: 'black',
-                  borderColor: 'black',
-                  color: 'white',
-                  borderWidth: 1,
-                },
-                wrapper: {
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  justifyContent: 'flex-start',
-                  marginTop: 30,
-                  marginLeft: 30,
-                },
-              },
-            },
-            top: {
-              title: 'SUPER LIKE',
-              style: {
-                label: {
-                  backgroundColor: 'black',
-                  borderColor: 'black',
-                  color: 'white',
-                  borderWidth: 1,
-                },
-                wrapper: {
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                },
-              },
-            },
-          }}
-          
-          swipeBackCard
-          
-        > 
-         <TouchableOpacity >
-         <Button onPress={() => this.swiper.swipeBack()} title='Swipe Backsdsdsds' className="h-10"/>
-         </TouchableOpacity>
-     
-         </Swiper>
-        {allCardsShown && renderNoMoreCards()}
+      <Swiper
+   
+        cards={profiles}
+        stackSize={2}
+        animateCardOpacity
+        ref={swiperRef}
+        onSwipedLeft={onSwipedLeft}
+        onSwipedRight={onSwipedRight}
+    
+        // containerStyle={{ backgroundColor: 'transparent' }}
+        renderCard={renderCard}
+        onSwipedAll={() => setAllCardsShown(true)}
+        cardIndex={currentIndex} // Используем индекс текущей карточки
+        useViewOverflow={Platform.OS === 'ios'}
+        animateOverlayLabelsOpacity
        
-      </View>
+        overlayLabels={{
+          bottom: {
+            title: 'BLEAH',
+            style: {
+              label: {
+                backgroundColor: 'black',
+                borderColor: 'black',
+                color: 'white',
+                borderWidth: 1,
+              },
+              wrapper: {
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+            },
+          },
+          left: {
+            title: 'NOPE',
+            style: {
+              label: {
+                backgroundColor: 'black',
+                borderColor: 'black',
+                color: 'white',
+                borderWidth: 1,
+              },
+              wrapper: {
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                justifyContent: 'flex-start',
+                marginTop: 30,
+                marginLeft: -30,
+              },
+            },
+          },
+          right: {
+            title: 'LIKE',
+            style: {
+              label: {
+                backgroundColor: 'black',
+                borderColor: 'black',
+                color: 'white',
+                borderWidth: 1,
+              },
+              wrapper: {
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                justifyContent: 'flex-start',
+                marginTop: 30,
+                marginLeft: 30,
+              },
+            },
+          },
+          top: {
+            title: 'SUPER LIKE',
+            style: {
+              label: {
+                backgroundColor: 'black',
+                borderColor: 'black',
+                color: 'white',
+                borderWidth: 1,
+              },
+              wrapper: {
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+            },
+          },
+        }}
+        
+        swipeBackCard
+        
+      > 
+       <TouchableOpacity >
+       </TouchableOpacity>
+   
+       </Swiper>
+      {allCardsShown && renderNoMoreCards()}
+     
+    </View>
+    )}
+
+     
       <View className="absolute bottom-10  w-screen flex-row justify-between p-5">
         <TouchableOpacity onPress={swipeBack}>
             <BackIcon size={34}/>
@@ -237,6 +300,11 @@ function HomeScreen({ navigation }) {
         </View>
 
     </SafeAreaView>
+    // <View>
+    //   {profiles.map((user) => (
+    //     console.log(user)
+    //   ))}
+    // </View>
   );
 }
 
