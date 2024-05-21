@@ -42,7 +42,7 @@ return(
 
      </Stack.Group>
 
-     <Stack.Group >
+     <Stack.Group screenOptions={{ presentation: 'modal' }} >
     <Stack.Screen name="Match" component={MatchScreen}/>
     </Stack.Group>
      </>

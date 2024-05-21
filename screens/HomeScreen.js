@@ -23,6 +23,7 @@ import {
 } from "firebase/firestore";
 import { db, timestamp } from "../firebase";
 import { useEffect } from 'react';
+import generateId from '../lib/generateid';
 
 
 import { StyleSheet } from 'react-native';
@@ -182,18 +183,54 @@ function HomeScreen({ navigation }) {
       </View>
     );
   };
-  // const swipeBack =()=> {
-  //   swipeRef.current.swipeBack();
-  // }
+  
   const swipeRight = async (cardIndex) => {
-    if (!profiles[cardIndex]) {
-      return;
+    try {
+      if (!profiles[cardIndex]) {
+        return;
+      }
+
+      const userSwiped = profiles[cardIndex];
+      const loggedInProfile = await (
+        await getDoc(doc(db, "users", user.uid))
+      ).data();
+
+      console.log("loggedInProfile", loggedInProfile);
+
+      getDoc(doc(db, "users", userSwiped.id, "swipes", user.uid)).then(
+        (docSnap) => {
+          if (docSnap.exists()) {
+            setDoc(
+              doc(db, "users", user.uid, "swipes", userSwiped.id),
+              userSwiped
+            );
+            setDoc(doc(db, "matches", generateId(user.uid, userSwiped.id)), {
+              users: {
+                [user.uid]: loggedInProfile,
+                [userSwiped.id]: userSwiped,
+              },
+              usersMatched: [user.uid, userSwiped.id],
+              timestamp,
+            });
+
+            console.log(loggedInProfile, userSwiped);
+
+            navigation.navigate("Match", {
+              loggedInProfile,
+              userSwiped,
+            });
+          } else {
+            setDoc(
+              doc(db, "users", user.uid, "swipes", userSwiped.id),
+              userSwiped
+            );
+          }
+        }
+      );
+    } catch (error) {
+      console.log(error);
     }
-
-    const userSwiped = profiles[cardIndex];
-
-    setDoc(doc(db, "users", user.uid, "swipes", userSwiped.id), userSwiped);
-  }
+  };
 
   return (
     <SafeAreaView className="relative h-screen w-screen">
