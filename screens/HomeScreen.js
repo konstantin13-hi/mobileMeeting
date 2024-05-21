@@ -67,6 +67,8 @@ function HomeScreen({ navigation }) {
   const {user} = useHookAuth();
   const [profiles,setProfiles] = useState([]);
 
+  const swipeRef = useRef(null);
+
   useLayoutEffect(() => {
     getDoc(doc(db, "users", user.uid)).then((snapShot) => {
       if (!snapShot.exists()) {
@@ -86,70 +88,90 @@ function HomeScreen({ navigation }) {
       </View>
     );
   };
-  const swiperRef = useRef(null);
-  const [viewedCards, setViewedCards] = useState([]); // Список просмотренных карточек
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const onSwipedLeft = () => {
-    const newIndex = currentIndex + 1;
-    setViewedCards([...viewedCards, currentIndex]); // Добавляем текущую карточку в список просмотренных
-    setCurrentIndex(newIndex);
-  };
-
-  const onSwipedRight = () => {
-    const newIndex = currentIndex + 1;
-    setViewedCards([...viewedCards, currentIndex]);
-    setCurrentIndex(newIndex);
-  };
-
-  const swipeLeft = () => {
-    swiperRef.current.swipeLeft();
-  };
-
-  const swipeRight = () => {
-    swiperRef.current.swipeRight();
-  };
-
-  const returnCard = () => {
-    if (viewedCards.length > 0) { // Проверяем, есть ли просмотренные карточки
-      const previousIndex = viewedCards.pop(); // Получаем индекс предыдущей карточки из списка
-      setCurrentIndex(previousIndex); // Устанавливаем индекс предыдущей карточки
-    }
-  };
-  // useEffect(() => {
-  //   let unsub ;
-  //     const fetchCards = async () =>{
-  //     unsub = onSnapshot(collection(db, "users"), (snapShot) => {
-  //       setProfiles(
-  //         snapShot.docs
-  //           .map((doc) => ({
-  //             id: doc.id,
-  //             ...doc.data(),
-  //           }))
-  //       );
-  //     });
-  //   }
-  //   fetchCards();
-
-  //   return unsub;
-  // }, []);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, 'users'));
-        const usersData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setProfiles(usersData);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      }
+    let unsub;
+
+    const fetchCards = async () => {
+
+      const passes = await getDocs(
+        collection(db, "users", user.uid, "passes")
+      ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
+
+      console.log(passes);
+
+      const swipes = await getDocs(
+        collection(db, "users", user.uid, "swipes")
+      ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
+
+      const passedUserIds = passes.length > 0 ? passes : ["temp"];
+      const swipedUserIds = swipes.length > 0 ? swipes : ["temp"];
+
+      unsub = onSnapshot(
+        query(
+          collection(db, "users"),
+          where("id", "not-in", [...passedUserIds, ...swipedUserIds])
+        ),
+        (snapShot) => {
+          setProfiles(
+            snapShot.docs
+              .filter((doc) => doc.id !== user.uid)
+              .map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+              }))
+          );
+        }
+      );
+
     };
 
-    fetchUsers();
+    fetchCards();
+
+    return unsub;
   }, []);
+
+  const [viewedCards, setViewedCards] = useState([]); // Список просмотренных карточек
+ 
+
+  // const onSwipedLeft = () => {
+  //   const newIndex = currentIndex + 1;
+  //   setViewedCards([...viewedCards, currentIndex]); // Добавляем текущую карточку в список просмотренных
+  //   setCurrentIndex(newIndex);
+  // };
+
+  // const onSwipedRight = () => {
+  //   const newIndex = currentIndex + 1;
+  //   setViewedCards([...viewedCards, currentIndex]);
+  //   setCurrentIndex(newIndex);
+  // };
+
+  const swipeLeft = (cardIndex) => {
+    if (!profiles[cardIndex]) {
+      return;
+    }
+
+    const userSwiped = profiles[cardIndex];
+    setDoc(doc(db, "users", user.uid, "passes", userSwiped.id), userSwiped);
+  };
+
+
+  // useEffect(() => {
+  //   const fetchUsers = async () => {
+  //     try {
+  //       const querySnapshot = await getDocs(collection(db, 'users'));
+  //       const usersData = querySnapshot.docs.map((doc) => ({
+  //         id: doc.id,
+  //         ...doc.data(),
+  //       }));
+  //       setProfiles(usersData);
+  //     } catch (error) {
+  //       console.error('Error fetching users:', error);
+  //     }
+  //   };
+
+  //   fetchUsers();
+  // }, []);
 
 
   const renderCard = (card, index) => {
@@ -160,8 +182,17 @@ function HomeScreen({ navigation }) {
       </View>
     );
   };
-  const swipeBack =()=> {
-    swiperRef.current.swipeBack();
+  // const swipeBack =()=> {
+  //   swipeRef.current.swipeBack();
+  // }
+  const swipeRight = async (cardIndex) => {
+    if (!profiles[cardIndex]) {
+      return;
+    }
+
+    const userSwiped = profiles[cardIndex];
+
+    setDoc(doc(db, "users", user.uid, "swipes", userSwiped.id), userSwiped);
   }
 
   return (
@@ -184,7 +215,7 @@ function HomeScreen({ navigation }) {
       </View>
 
       {profiles.length === 0 ? (
-      <ActivityIndicator size="large" color="#0000ff" />
+      <ActivityIndicator size="large" color="red" />
     ) : (
       <View>
       <Swiper
@@ -192,14 +223,20 @@ function HomeScreen({ navigation }) {
         cards={profiles}
         stackSize={2}
         animateCardOpacity
-        ref={swiperRef}
-        onSwipedLeft={onSwipedLeft}
-        onSwipedRight={onSwipedRight}
+        ref={swipeRef}
+        onSwipedLeft={(cardIndex) => {
+          console.log("Swipe left");
+          swipeLeft(cardIndex);
+        }}
+        onSwipedRight={(cardIndex) => {
+          console.log("Swipe Right");
+          swipeRight(cardIndex);
+        }}
     
         // containerStyle={{ backgroundColor: 'transparent' }}
         renderCard={renderCard}
         onSwipedAll={() => setAllCardsShown(true)}
-        cardIndex={currentIndex} // Используем индекс текущей карточки
+        cardIndex={0} // Используем индекс текущей карточки
         useViewOverflow={Platform.OS === 'ios'}
         animateOverlayLabelsOpacity
        
@@ -288,16 +325,16 @@ function HomeScreen({ navigation }) {
 
      
       <View className="absolute bottom-10  w-screen flex-row justify-between p-5">
-        <TouchableOpacity onPress={swipeBack}>
+        <TouchableOpacity  >
             <BackIcon size={34}/>
           </TouchableOpacity>
-          <TouchableOpacity onPress={swipeLeft}>
+          <TouchableOpacity onPress={() => swipeRef.current.swipeLeft()}>
             <CancelIcon size={34} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={swipeRight}>
+          <TouchableOpacity >
             <HeartIcon size={34}/>
           </TouchableOpacity>
-        </View>
+       </View>
 
     </SafeAreaView>
     // <View>
