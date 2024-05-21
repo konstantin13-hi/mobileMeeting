@@ -13,6 +13,7 @@ import ModalScreen from './screens/ModalScreen';
 import MatchScreen from './screens/MatchScreen';
 import Account from './screens/Account';
 import Language from './screens/Language';
+import TestScreen from './screens/TestScreen';
 
 
 
@@ -25,11 +26,12 @@ function StackNavigator() {
 return(
   <Stack.Navigator 
   screenOptions={{headerShown:false}}>
-  
+   
 
 {user ? (
       <>
         <Stack.Group >
+             
              <Stack.Screen name="Home" component={HomeScreen} />
               <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: true }}/>
               <Stack.Screen name="Message" component={MessageScreen} />
@@ -42,7 +44,7 @@ return(
 
      </Stack.Group>
 
-     <Stack.Group screenOptions={{ presentation: 'modal' }} >
+     <Stack.Group   screenOptions={{ presentation: 'transparentModal' }}>
     <Stack.Screen name="Match" component={MatchScreen}/>
     </Stack.Group>
      </>
@@ -60,28 +62,3 @@ return(
 }
 
 export default StackNavigator;
-
-
-
-  {/* //     <Stack.Screen name="Home" component={HomeScreen} />
-      //     <Stack.Screen name="Chat" component={ChatScreen} />
-      //   </> */}
-      {/* // ) : (
-      //   <Stack.Screen name="Login" component={LoginScreen} />
-      // )} */} 
-
-
-        // if (permissionType === 'never') {
-  //   return (
-  //     <Stack.Navigator>
-  //       <Stack.Screen name="Loc" component={LocationPermission} />
-  //     </Stack.Navigator>
-  //   );
-  // } else {
-  //   return (
-  //     <Stack.Navigator>
-  //       <Stack.Screen name="Home" component={HomeScreen} />
-  //       <Stack.Screen name="Chat" component={ChatScreen} />
-  //     </Stack.Navigator>
-  //   );
-  // }
