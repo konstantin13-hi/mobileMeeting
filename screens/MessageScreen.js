@@ -1,15 +1,41 @@
+import {
+  View,
+  Text,
+  SafeAreaView,
+  TextInput,
+  Button,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  FlatList,
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import Header from "../components/Header";
+import getMatchedUserInfo from "../lib/getMatchedUserInfo";
 
-import React, { Component } from 'react'
-import { Text, View } from 'react-native'
+import { useRoute } from "@react-navigation/native";
+import {
+  addDoc,
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
+import { db, timestamp } from "../firebase";
+import useHookAuth from "../hooks/useAuth";
 
-export class MessageScreen extends Component {
-  render() {
-    return (
-      <View>
-        <Text> textInComponent </Text>
-      </View>
-    )
-  }
-}
+const MessageScreen = () => {
+  const { user } = useHookAuth();
+ 
 
-export default MessageScreen
+
+  
+
+  return (
+   <><Text>
+    dsdsdss</Text></>
+  );
+};
+
+export default MessageScreen;
