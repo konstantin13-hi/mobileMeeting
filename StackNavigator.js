@@ -33,7 +33,7 @@ return(
         <Stack.Group >
              
              <Stack.Screen name="Home" component={HomeScreen} />
-              <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: true }}/>
+              <Stack.Screen name="Chat" component={ChatScreen}/>
               <Stack.Screen name="Message" component={MessageScreen} />
               <Stack.Screen name="Account" component={Account} options={{ headerShown: true }}/>
               <Stack.Screen name="Language" component={Language} options={{headerShown:true}}/>
