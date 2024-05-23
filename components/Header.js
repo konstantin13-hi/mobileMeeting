@@ -33,20 +33,3 @@ const Header = ({ title, callEnabled }) => {
 };
 
 export default Header;
-
-{/* <View className="flex flex-row">
-        <TouchableOpacity
-          className="p-2"
-          onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back-outline" size={34} color="#FF5864" />
-        </TouchableOpacity>
-        <View>
-        <Text className="text-2xl font-bold">{title}</Text>
-      </View>
-
-      {callEnabled && (
-        <TouchableOpacity className="rounded-full mr-4 p-3 bg-red-200">
-         <Phone/>
-        </TouchableOpacity>
-      )}
-    </View> */}
