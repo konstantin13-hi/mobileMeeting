@@ -20,6 +20,7 @@ add to your account, profiles will be shown that will be based on past swipes)
 
 
 ## Documents
-([Online]https://dbdiagram.io/d/dating-section-664f988ff84ecd1d22ff06b6)
+dataBase([Online]https://dbdiagram.io/d/dating-section-664f988ff84ecd1d22ff06b6)  [description](documents/database_explaining.md)
+
 
 
