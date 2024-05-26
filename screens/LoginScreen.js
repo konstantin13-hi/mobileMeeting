@@ -13,10 +13,7 @@ import { auth } from "../firebase";
 import useHookAuth, {AuthContext} from "../hooks/useAuth"
 
 export default function LoginScreen()  {
-  // const[type,setType] = useState(2);
-  // const[name,SetName]= useState(null);
-  // const[mail,SetMail] = useState(null);
-  // const[password,SetPasword] = useState(null);
+
 
   const [type, setType] = useState(1);
   const [name, setName] = useState('');
@@ -24,8 +21,6 @@ export default function LoginScreen()  {
   const [password, setPassword] = useState('');
   const {createUserInStorage } = useHookAuth();
   const { loading, setLoading } = useHookAuth();
-
-  
 
 
 
@@ -91,7 +86,7 @@ return (
 
   type === 1 ? (
           <View className="flex-1 items-center justify-center">
-          <Text>Sing in</Text>
+          <Text className="text-red-400">Sing in</Text>
           
 
           <TextInput 
@@ -122,6 +117,7 @@ return (
        onPress={() => {
          setType(2);
        }}
+     
      />
           
    </View>

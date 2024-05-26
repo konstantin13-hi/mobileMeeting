@@ -1,13 +1,34 @@
 import React, { Component } from 'react'
 import { Text, View } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { StyleSheet } from 'react-native';
+import tw from 'twrnc';
+const CancelIcon  =({size,color}) => {
 
-export class CancelIcon extends Component {
-  render() {
+
     return (
-        <MaterialIcons name="cancel" size={this.props.size} color="black" />
+
+     <MaterialIcons name="cancel" size={size} color={color} /> 
+ 
+               
+                  
+
+      
+     
     )
-  }
+  
 }
 
-export default CancelIcon
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position:"absolute",
+
+    
+  },
+});
+
+export default CancelIcon;

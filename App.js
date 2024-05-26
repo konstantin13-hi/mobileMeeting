@@ -10,6 +10,7 @@ import { Text ,View} from 'react-native';
 
 function App() {
   return (
+
    
  
     <NavigationContainer>

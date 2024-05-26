@@ -8,7 +8,7 @@ export class ChatIcon extends Component {
   render() {
     return (
       <View>
-      <Ionicons name="chatbubbles-sharp" size={30} color="black" />
+      <Ionicons name="chatbubbles-sharp" size={30} color="white" />
       </View>
     )
   }

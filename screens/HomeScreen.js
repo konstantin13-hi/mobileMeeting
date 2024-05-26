@@ -35,6 +35,7 @@ import BackIcon from '../icons/BackIcon';
 import useHookAuth from '../hooks/useAuth';
 
 
+
 const DUMMY_DATA = [
   {
     displayName: "Ilon Mask",
@@ -80,13 +81,7 @@ function HomeScreen({ navigation }) {
 
   const renderNoMoreCards = () => {
     return (
-      <View className="h-3/4 rounded-xl">
-        <Image
-          source={{ uri: "https://w0.peakpx.com/wallpaper/341/905/HD-wallpaper-where-the-mask-sad-emoji.jpg" }}
-          style={{ flex: 1, width: null, height: null }}
-        />
-        <Text>No more cards</Text>
-      </View>
+      <ActivityIndicator size="large" color="red" />
     );
   };
 
@@ -133,19 +128,6 @@ function HomeScreen({ navigation }) {
   }, []);
 
   const [viewedCards, setViewedCards] = useState([]); // Список просмотренных карточек
- 
-
-  // const onSwipedLeft = () => {
-  //   const newIndex = currentIndex + 1;
-  //   setViewedCards([...viewedCards, currentIndex]); // Добавляем текущую карточку в список просмотренных
-  //   setCurrentIndex(newIndex);
-  // };
-
-  // const onSwipedRight = () => {
-  //   const newIndex = currentIndex + 1;
-  //   setViewedCards([...viewedCards, currentIndex]);
-  //   setCurrentIndex(newIndex);
-  // };
 
   const swipeLeft = (cardIndex) => {
     if (!profiles[cardIndex]) {
@@ -156,33 +138,47 @@ function HomeScreen({ navigation }) {
     setDoc(doc(db, "users", user.uid, "passes", userSwiped.id), userSwiped);
   };
 
-
-  // useEffect(() => {
-  //   const fetchUsers = async () => {
-  //     try {
-  //       const querySnapshot = await getDocs(collection(db, 'users'));
-  //       const usersData = querySnapshot.docs.map((doc) => ({
-  //         id: doc.id,
-  //         ...doc.data(),
-  //       }));
-  //       setProfiles(usersData);
-  //     } catch (error) {
-  //       console.error('Error fetching users:', error);
-  //     }
-  //   };
-
-  //   fetchUsers();
-  // }, []);
-
+  // const renderCard = (card, index) => {
+  //   return (
+  //     <View className="h-2/3 border bg-white rounded-xl mt-10">
+  //       <View className="bg-black h-4/5 rounded-t-xl">
+  //       <Image source={{ uri: card?.photoURL }}  className="object-cover h-full w-full rounded-t-xl" />
+  //       </View>
+     
+  //       <Text>{card?.displayName}</Text>
+  //     </View>
+  //   );
+  // };
 
   const renderCard = (card, index) => {
     return (
-      <View className="h-3/4 rounded-xl">
-        <Image source={{ uri: card.photoURL }}  style={{ flex: 1, width: null, height: null }}/>
-        <Text>{card.displayName}</Text>
+      <View className="h-2/3 border bg-white rounded-xl -mt-10">
+        <View className="bg-black h-4/5 rounded-t-xl relative">
+          <Image source={{ uri: card?.photoURL }} className="object-cover h-full w-full rounded-t-xl" />
+   
+             </View>
+        <Text>{card?.displayName}</Text>
       </View>
     );
   };
+  const renderButtons =()=>{
+    return(
+    <View className="flex-row justify-between ml-20 mr-20">
+        
+          <TouchableOpacity className="relative">
+           <View className="absolute bg-white h-12 w-10 rounded-full inset-0 top-2 left-2">
+           </View>
+           <CancelIcon size={66} color={"grey"} className="overflow-hidden">   </CancelIcon>
+          </TouchableOpacity>
+          <TouchableOpacity className="relative">
+          <View className="absolute bg-white h-12 w-10 rounded-full inset-0 top-2 left-2">
+           </View>
+            <HeartIcon size={64}/>
+          </TouchableOpacity>
+       </View>
+   
+    )
+  }
   
   const swipeRight = async (cardIndex) => {
     try {
@@ -232,12 +228,15 @@ function HomeScreen({ navigation }) {
     }
   };
 
+ 
+
   return (
-    <SafeAreaView className="relative h-screen w-screen">
+    <SafeAreaView className="relative h-screen w-screen bg-main">
+       
       
-      <View className=" flex-row justify-between items-center ml-2 mr-2">
+      <View className=" flex-row justify-between items-center ml-20 mr-20">
         <TouchableOpacity>
-          <MaterialIcons name="account-circle" size={40} color="gray" onPress={() => navigation.navigate('Account')} />
+          <MaterialIcons name="account-circle" size={40} color="white" onPress={() => navigation.navigate('Account')} />
         </TouchableOpacity>
         <TouchableOpacity onPress={()=> navigation.navigate('Modal')}> 
 
@@ -250,17 +249,25 @@ function HomeScreen({ navigation }) {
           <ChatIcon />
         </TouchableOpacity>
       </View>
-
-      {profiles.length === 0 ? (
-      <ActivityIndicator size="large" color="red" />
-    ) : (
-      <View>
-      <Swiper
+      
    
+  {profiles.length === 0 ? (
+    <View>
+      <ActivityIndicator size="large" color="red" />
+    </View>
+  ) : (
+   
+   <View>
+  
+    <View className="h-4/5   ">
+      <Swiper
         cards={profiles}
         stackSize={2}
         animateCardOpacity
+        backgroundColor={null}
         ref={swipeRef}
+        marginTop={null}
+        marginBottom={null}
         onSwipedLeft={(cardIndex) => {
           console.log("Swipe left");
           swipeLeft(cardIndex);
@@ -269,118 +276,140 @@ function HomeScreen({ navigation }) {
           console.log("Swipe Right");
           swipeRight(cardIndex);
         }}
-    
-        // containerStyle={{ backgroundColor: 'transparent' }}
         renderCard={renderCard}
         onSwipedAll={() => setAllCardsShown(true)}
-        cardIndex={0} // Используем индекс текущей карточки
+        cardIndex={0}
         useViewOverflow={Platform.OS === 'ios'}
         animateOverlayLabelsOpacity
-       
         overlayLabels={{
-          bottom: {
-            title: 'BLEAH',
-            style: {
-              label: {
-                backgroundColor: 'black',
-                borderColor: 'black',
-                color: 'white',
-                borderWidth: 1,
-              },
-              wrapper: {
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-              },
-            },
-          },
           left: {
-            title: 'NOPE',
-            style: {
-              label: {
-                backgroundColor: 'black',
-                borderColor: 'black',
-                color: 'white',
-                borderWidth: 1,
-              },
-              wrapper: {
-                flexDirection: 'column',
-                alignItems: 'flex-end',
-                justifyContent: 'flex-start',
-                marginTop: 30,
-                marginLeft: -30,
-              },
-            },
+            element: 
+            <View className="relative">   
+             <View className="absolute bg-white h-12 w-14 rounded-full inset-0 top-3 left-3">
+            </View>
+            <CancelIcon size={80} color={"grey"}>  
+             </CancelIcon>
+             </View>
+            
+            
+       , /* Optional */
+              style: {
+                wrapper: {
+                  height:483,
+                  backgroundColor: "rgba(167, 167, 167, 0.5)",
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius:12,
+                  marginTop:-40,
+                  borderWidth:5,
+                  borderColor:'rgb(167, 167, 167)',
+                  
+                  
+                  
+                }
+              }
           },
           right: {
-            title: 'LIKE',
-            style: {
-              label: {
-                backgroundColor: 'black',
-                borderColor: 'black',
-                color: 'white',
-                borderWidth: 1,
-              },
-              wrapper: {
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                justifyContent: 'flex-start',
-                marginTop: 30,
-                marginLeft: 30,
-              },
-            },
-          },
-          top: {
-            title: 'SUPER LIKE',
-            style: {
-              label: {
-                backgroundColor: 'black',
-                borderColor: 'black',
-                color: 'white',
-                borderWidth: 1,
-              },
-              wrapper: {
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-              },
-            },
-          },
-        }}
+            element: 
+            <View className="relative">   
+             <View className="absolute bg-white h-12 w-12 rounded-full inset-0 top-3 left-3">
+            </View>
+            <HeartIcon size={80}></HeartIcon>
+            </View>, /* Optional */
         
+              style: {
+              
+                wrapper: {
+                  height:483,
+                  backgroundColor: "rgba(181, 154, 101, 0.5)",
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius:12,
+                  marginTop:-40,
+                  borderWidth:5,
+                  borderColor:'rgb(181, 154, 101)',
+                  
+                  
+                  
+                }
+              }
+            },
+
+         
+        }}
         swipeBackCard
         
-      > 
-       <TouchableOpacity >
-       </TouchableOpacity>
-   
-       </Swiper>
-      {allCardsShown && renderNoMoreCards()}
+     />
+      
+     
      
     </View>
-    )}
+
+     <View>
+       {renderButtons()}
+      </View>
+
+    </View>
+    
+  )}
+
+    
 
      
-      <View className="absolute bottom-10  w-screen flex-row justify-between p-5">
-        <TouchableOpacity  >
-            <BackIcon size={34}/>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => swipeRef.current.swipeLeft()}>
-            <CancelIcon size={34} />
-          </TouchableOpacity>
-          <TouchableOpacity >
-            <HeartIcon size={34}/>
-          </TouchableOpacity>
-       </View>
+
+
+
+    
 
     </SafeAreaView>
-    // <View>
-    //   {profiles.map((user) => (
-    //     console.log(user)
-    //   ))}
-    // </View>
+   
   );
 }
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "white"
+  },
+  card: {
+    flex: 1,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: "#E8E8E8",
+    justifyContent: "center",
+    backgroundColor: "white"
+  },
+  text: {
+    textAlign: "center",
+    fontSize: 50,
+    backgroundColor: "transparent"
+  }
+});
+
+
 export default HomeScreen
 // style={{backgroundColor:"pink", borderWidth: 1, borderColor: 'black', width: 50, height: 50}}
+
+
+{/* <View style={styles.container}>
+<Swiper
+    cards={['DO', 'MORE', 'OF', 'WHAT', 'MAKES', 'YOU', 'HAPPY']}
+    renderCard={(card) => {
+        return (
+            <View style={styles.card}>
+                <Text style={styles.text}>{card}</Text>
+            </View>
+        )
+    }}
+    onSwiped={(cardIndex) => {console.log(cardIndex)}}
+    onSwipedAll={() => {console.log('onSwipedAll')}}
+    cardIndex={0}
+    backgroundColor={'#ffffff'}
+    stackSize= {3}>
+    <Button
+        onPress={() => {console.log('oulala')}}
+        title="Press me">
+        You can press me
+    </Button>
+</Swiper>
+</View> */}

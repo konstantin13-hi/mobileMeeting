@@ -33,6 +33,7 @@ const MatchScreen =({navigation})=> {
   
 
   const rotation = new Animated.Value(0);
+  
 
 
   return (

@@ -6,7 +6,7 @@ export class HeartIcon extends Component {
   render() {
     return (
    
-        <MaterialCommunityIcons name="heart-circle" size={this.props.size} color="black" />
+        <MaterialCommunityIcons name="heart-circle" size={this.props.size} color='rgb(181, 154, 101)' />
    
     )
   }
