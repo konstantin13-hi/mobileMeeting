@@ -10,7 +10,8 @@ module.exports = {
     extend: {
       colors: {
         'main': 'rgb(38, 56, 78)',
-        'mainGolden':'rgb(181, 154, 101)'
+        'mainGolden':'rgb(181, 154, 101)',
+        'messRec':'rgb(52, 66, 85)'
       },
     },
   },

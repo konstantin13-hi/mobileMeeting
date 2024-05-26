@@ -334,6 +334,59 @@ function HomeScreen({ navigation }) {
                 }
               }
             },
+            top: {
+              element: 
+              <View className="relative">   
+               <View className="absolute bg-white h-12 w-12 rounded-full inset-0 top-3 left-3">
+              </View>
+              <HeartIcon size={80}></HeartIcon>
+              </View>, /* Optional */
+          
+                style: {
+                
+                  wrapper: {
+                    height:483,
+                    backgroundColor: "rgba(181, 154, 101, 0.5)",
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius:12,
+                    marginTop:-40,
+                    borderWidth:5,
+                    borderColor:'rgb(181, 154, 101)',
+                    
+                    
+                    
+                  }
+                }
+
+            },
+            bottom: {
+              element: 
+              <View className="relative">   
+               <View className="absolute bg-white h-12 w-12 rounded-full inset-0 top-3 left-3">
+              </View>
+              <HeartIcon size={80}></HeartIcon>
+              </View>, /* Optional */
+          
+                style: {
+                
+                  wrapper: {
+                    height:483,
+                    backgroundColor: "rgba(181, 154, 101, 0.5)",
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius:12,
+                    marginTop:-40,
+                    borderWidth:5,
+                    borderColor:'rgb(181, 154, 101)',
+                    
+                    
+                    
+                  }
+                }
+
+            }
+            
 
          
         }}

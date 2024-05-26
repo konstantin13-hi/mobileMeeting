@@ -72,92 +72,58 @@ const MessageScreen = () => {
   };
 
 
-  return (
-  //   <SafeAreaView className="flex">
-  //     <Header title={name}></Header>
-  //     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-  // className="flex h-full"
-  // keyboardVerticalOffset={10}>
 
-  // <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-  //   <FlatList
-  //    data={messages}
-  //    className="pl-4"
-  //    keyExtractor={(item) => item.id}
-  //    inverted={-1}
-  //    renderItem={({ item: message }) =>
-  //      message.userId === user.uid ? (
-  //        <SenderMessage key={message.id} message={message} />
-  //      ) : (
-  //        <ReceiverMessage key={message.id} message={message} />
-  //      )
-  //    }
-    
-  //   />
-
-  // </TouchableWithoutFeedback>
-
-  // <View className="flex flex-row bottom-20">
-  //       <TextInput
-  //         placeholder="Enter your text"
-  //         style={{ height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 20, width: '80%' }}
-  //         onChangeText={(text) => setInput(text)}
-  //         value={input}
-  //         onSubmitEditing={sendMessage}
-  //       />
-  //       <Button title="Submit" color="#FF5864" onPress={sendMessage} />
-  //     </View>
-    
-  // </KeyboardAvoidingView>
-
+    return (
       
-
-  //   </SafeAreaView>
-
-  <SafeAreaView  className="pt-5 flex-1">
-      <Header
-        title={getMatchedUserInfo(matchDetails.users, user.uid).displayName}
-        callEnabled
-      />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1"
-        keyboardVerticalOffset={10}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <FlatList
-            data={messages}
-            className="pl-4"
-            keyExtractor={(item) => item.id}
-            inverted={-1}
-            renderItem={({ item: message }) =>
-              message.userId === user.uid ? (
-                <SenderMessage key={message.id} message={message} />
-              ) : (
-                <ReceiverMessage key={message.id} message={message} />
-              )
-            }
+      <SafeAreaView className="pt-5 flex-1 bg-main">
+        <View className="flex-row justify-between mr-5">
+          <Header
+            title={getMatchedUserInfo(matchDetails.users, user.uid).displayName}
           />
-        </TouchableWithoutFeedback>
-
-        <View
-          className=
-            "flex-row justify-between items-center bg-white border-t border-gray-200 px-5 py-2"
-        
-        >
-          <TextInput
-             className="h-10 text-lg"
-            placeholder="Send Message..."
-            onChangeText={setInput}
-            onSubmitEditing={sendMessage}
-            value={input}
-          />
-          <Button onPress={sendMessage} title="Send" color="#FF5864" />
+          <View className="h-10 w-10 bg-black rounded-full">
+            <Image
+              source={{ uri: getMatchedUserInfo(matchDetails.users, user.uid).photoURL }}
+              className="h-full w-full object-cover rounded-full"
+            />
+          </View>
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-
-  );
+        <View className="border-b-2 border-white"></View>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="flex-1"
+          keyboardVerticalOffset={10}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View className="flex-1">
+              <FlatList
+                data={messages}
+                className="pl-4"
+                keyExtractor={(item) => item.id}
+                inverted={-1}
+                renderItem={({ item: message }) =>
+                  message.userId === user.uid ? (
+                    <SenderMessage key={message.id} message={message} />
+                  ) : (
+                    <ReceiverMessage key={message.id} message={message} />
+                  )
+                }
+              />
+              <View className="flex-row items-center border-t border-gray-200 p-4">
+                <TextInput
+                  style={{ flex: 1, height: 40, borderColor: 'gray', borderWidth: 1, borderRadius: 20, paddingHorizontal: 10 }}
+                  value={input}
+                  onChangeText={setInput}
+                  placeholder="Введите сообщение..."
+                />
+                <TouchableOpacity onPress={sendMessage} style={{ marginLeft: 10 }}>
+                  <Text style={{ color: 'blue', fontWeight: 'bold' }}>Отправить</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
   
 }
 
