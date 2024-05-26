@@ -7,6 +7,14 @@ import useHookAuth from '../hooks/useAuth';
 import { useState,useEffect } from 'react';
 import getMatchedUserInfo from '../lib/getMatchedUserInfo';
 import { useNavigation } from '@react-navigation/native';
+import {
+  collection,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
+import { db } from "../firebase";
 
 const ChatRow = ({matchDetails}) => {
     const navigation = useNavigation();
@@ -17,6 +25,17 @@ const ChatRow = ({matchDetails}) => {
     useEffect(() => {
       setMatchedUserInfo(getMatchedUserInfo(matchDetails.users, user.uid));
     }, [matchDetails, user]);
+
+    useEffect(() => {
+      onSnapshot(
+        query(
+          collection(db, "matches", matchDetails.id, "messages"),
+          orderBy("timestamp", "desc"),
+          limit(1)
+        ),
+        (snapShot) => setLastMessage(snapShot.docs[0]?.data()?.message)
+      );
+    }, [matchDetails]);
  
     return (
         <TouchableOpacity
