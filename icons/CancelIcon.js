@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import { Text, View } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { StyleSheet } from 'react-native';
-import tw from 'twrnc';
 const CancelIcon  =({size,color}) => {
 
 
