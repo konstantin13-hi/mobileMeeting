@@ -14,6 +14,7 @@ import MatchScreen from './screens/MatchScreen';
 import Account from './screens/Account';
 import Language from './screens/Language';
 import TestScreen from './screens/TestScreen';
+import UserProfile from './screens/UserProfile';
 
 
 
@@ -22,7 +23,7 @@ const Stack = createNativeStackNavigator();
 function StackNavigator() {
   const {user} = useHookAuth();
   // const { permissionType, setPermissionType, location } = useLocationPermission();
-  console.log(user);
+  // console.log(user);
 return(
   <Stack.Navigator 
   screenOptions={{headerShown:false}}>
@@ -35,6 +36,7 @@ return(
              <Stack.Screen name="Home" component={HomeScreen} />
               <Stack.Screen name="Chat" component={ChatScreen}/>
               <Stack.Screen name="Message" component={MessageScreen} />
+              <Stack.Screen name="UserProfile" component={UserProfile} />
               <Stack.Screen name="Account" component={Account} options={{ headerShown: true }}/>
               <Stack.Screen name="Language" component={Language} options={{headerShown:true}}/>
         </Stack.Group>

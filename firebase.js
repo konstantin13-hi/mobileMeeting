@@ -6,14 +6,16 @@ import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { EmailAuthCredential, EmailAuthProvider } from "firebase/auth/cordova";
 import { getFirestore ,serverTimestamp} from "firebase/firestore";
 
+
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDpQIgw0MPye5mj4uh_1-e35EJplgCZZuo",
-  authDomain: "fffffff-704ec.firebaseapp.com",
-  projectId: "fffffff-704ec",
-  storageBucket: "fffffff-704ec.appspot.com",
-  messagingSenderId: "420111812837",
-  appId: "1:420111812837:web:eef5913a865a09aa5a2c0c"
+  apiKey: "AIzaSyCNkGtxaUuQ5WPFFT_Y1pAL5s5D_sO-SAo",
+  authDomain: "dyplom-6fa0e.firebaseapp.com",
+  projectId: "dyplom-6fa0e",
+  storageBucket: "dyplom-6fa0e.appspot.com",
+  messagingSenderId: "549105404821",
+  appId: "1:549105404821:web:c03da684f041d26a85449c",
+  measurementId: "G-RZ0QPH0Q6S"
 };
 
 // Initialize Firebase

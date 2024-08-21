@@ -21,6 +21,9 @@ const ModalScreen = () => {
 
   const incompleteForm = !image || !age || !job;
 
+  console.log(user.uid);
+  
+
   const updateUserProfile = () => {
     setDoc(doc(db, "users", user.uid), {
       id: user.uid,

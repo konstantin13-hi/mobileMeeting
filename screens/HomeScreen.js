@@ -24,7 +24,7 @@ import {
 import { db, timestamp } from "../firebase";
 import { useEffect } from 'react';
 import generateId from '../lib/generateid';
-
+import Animated from 'react-native-reanimated';
 
 import { StyleSheet } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -70,6 +70,7 @@ function HomeScreen({ navigation }) {
   const [profiles,setProfiles] = useState([]);
 
   const swipeRef = useRef(null);
+  
 
   useLayoutEffect(() => {
     getDoc(doc(db, "users", user.uid)).then((snapShot) => {
@@ -94,7 +95,7 @@ function HomeScreen({ navigation }) {
         collection(db, "users", user.uid, "passes")
       ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
 
-      console.log(passes);
+      // console.log(passes);
 
       const swipes = await getDocs(
         collection(db, "users", user.uid, "swipes")
@@ -151,10 +152,17 @@ function HomeScreen({ navigation }) {
   // };
 
   const renderCard = (card, index) => {
+    
     return (
       <View className="h-2/3 border bg-white rounded-xl -mt-10">
         <View className="bg-black h-4/5 rounded-t-xl relative">
-          <Image source={{ uri: card?.photoURL }} className="object-cover h-full w-full rounded-t-xl" />
+          <Animated.Image source={{ uri: card?.photoURL }} className="object-cover h-full w-full rounded-t-xl" 
+              sharedTransitionTag="tag"
+          />
+          <Button
+        title="Go to UserProfile"
+        onPress={() => navigation.navigate('UserProfile',{card})}
+      />
    
              </View>
         <Text>{card?.displayName}</Text>
@@ -419,25 +427,6 @@ function HomeScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "white"
-  },
-  card: {
-    flex: 1,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: "#E8E8E8",
-    justifyContent: "center",
-    backgroundColor: "white"
-  },
-  text: {
-    textAlign: "center",
-    fontSize: 50,
-    backgroundColor: "transparent"
-  }
-});
 
 
 export default HomeScreen
