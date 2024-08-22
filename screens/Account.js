@@ -1,20 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import { Text, View, Button, Switch, StyleSheet, TouchableOpacity,FlatList ,ScrollView,Modal} from 'react-native';
 import Language from './Language';
 import useHookAuth from '../hooks/useAuth';
 import { Image } from 'react-native';
 import Trash from '../components/Trash';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Plus from '../components/Plus';
+import {pickImage} from '../lib/imagePicker'
+import { db, timestamp ,storage} from "../firebase";
+import useAuth from "../hooks/useAuth";
+import { doc, getDoc } from "firebase/firestore";
+
+
 const Account = ({ navigation }) => {
+  const { user } = useAuth();
   const [language, setLanguage] = useState('english');
   const [darkMode, setDarkMode] = useState(false);
   const {logout} = useHookAuth();
   const [modalVisible, setModalVisible] = useState(false);
-  const imageUrlsData = [
-    'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-    'https://upload.wikimedia.org/wikipedia/commons/4/48/Outdoors-man-portrait_%28cropped%29.jpg',
-    'https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-  ];
+  const [squares, setSquares] = useState([1]); // Начальный квадрат
+  const [imageUrls, setImageUrls] = useState([]);
+  console.log(user);
+
+
+  const fetchUserImages = async (uid) => {
+    try {
+      // Получаем ссылку на документ пользователя в Firestore
+      const userDocRef = doc(db, "users", uid);
+      const userDocSnap = await getDoc(userDocRef);
+  
+      // Проверяем, существует ли документ
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+  
+        // Предполагаем, что массив URL фотографий хранится в поле profileImages
+        const profileImages = userData.profileImages || [];
+  
+        // Возвращаем первые 5 URL (или меньше, если их меньше 5)
+        return profileImages.slice(0, 5);
+      } else {
+        console.log("No such document!");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching user images: ", error);
+      return [];
+    }
+  };
+
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      const images = await fetchUserImages(user.uid);
+      setImageUrls(images);
+    };
+    console.log(user.uid)
+
+    fetchImages();
+  }, [user.uid]);
 
   const handleLanguageChange = (lang) => {
     setLanguage(lang);
@@ -45,12 +87,20 @@ const Account = ({ navigation }) => {
     );
   
 
-  const [squares, setSquares] = useState([1]); // Начальный квадрат
-  const [imageUrls, setImageUrls] = useState(imageUrlsData);
+
 
   const addSquare = () => {
     setSquares([...squares, squares.length + 1]);
   };
+
+  const handleAddImage = async () => {
+    const downloadURL = await pickImage(db, storage, user.uid, setImageUrls); // Передаем необходимые параметры
+    if (downloadURL) {
+      console.log('Image added:', downloadURL);
+      // Теперь массив `imageUrls` уже обновлен внутри `pickImage`
+    }
+  };
+  console.log()
 
   
  
@@ -115,9 +165,24 @@ const Account = ({ navigation }) => {
   //   </View>
   <View style={styles.flexContainer}>
   <FlatList
-  data={imageUrlsData}
-  renderItem={renderItem}
   keyExtractor={(item) => item}
+  ListHeaderComponent={() => (
+    <View style={styles.gridContainer}>
+    {imageUrls.length > 0 && imageUrls.map((item, index) => (
+      <TouchableOpacity key={index} style={styles.gridItem} onPress={() => setModalVisible(true)} >
+        <Image
+          source={{ uri: item }}
+          style={styles.image}
+        />
+        <Trash />
+      </TouchableOpacity>
+    ))}
+    <TouchableOpacity style={styles.gridItem} onPress={handleAddImage} >
+       
+       <Plus></Plus>
+      </TouchableOpacity>
+  </View>
+  )}
   ListFooterComponent={() => (
     <View>
 
@@ -253,6 +318,23 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 18,
     fontWeight: 'bold',
+  },
+
+  gridContainer: {
+    flexDirection: 'row',  // Устанавливает элементы в строку
+    flexWrap: 'wrap',      // Позволяет переносить элементы на новую строку
+    justifyContent: 'space-between', // Распределяет элементы равномерно
+  },
+  gridItem: {
+    borderRadius:10,
+    marginLeft:20,
+    marginRight:10,
+    width: 100,          // Устанавливает ширину каждого элемента на 30%
+    height: 100,
+    marginBottom: 10,      // Добавляет отступ снизу
+    backgroundColor: 'lightblue', // Цвет фона для визуализации
+    textAlign: 'center',   // Центрирование текста по горизонтали
+    overflow: 'hidden', 
   },
 });
 
