@@ -9,6 +9,7 @@ import {pickImage} from '../lib/imagePicker'
 import { db, timestamp ,storage} from "../firebase";
 import useAuth from "../hooks/useAuth";
 import { doc, getDoc } from "firebase/firestore";
+import ProfileDescription from '../components/ProfileDescription';
 
 
 const Account = ({ navigation }) => {
@@ -188,6 +189,8 @@ const Account = ({ navigation }) => {
 
       <Text>Photos</Text>
       <Text style={styles.title}>Account Settings</Text>
+      <ProfileDescription></ProfileDescription>
+     
 
       <TouchableOpacity onPress={() => navigation.navigate("Language")}>
         <View style={styles.setting}>
