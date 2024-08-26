@@ -36,32 +36,7 @@ import useHookAuth from '../hooks/useAuth';
 
 
 
-const DUMMY_DATA = [
-  {
-    displayName: "Ilon Mask",
-    job: "Software Engineer",
-    photoURL:
-"https://www.ixbt.com/img/x780/n1/news/2021/6/5/4adf85be7536d688480f1f6485034c527e552662_large_large_large.jpg",
-    age: 33,
-    id: 1,
-  },
-  {
-    displayName: "Mark Zuckerberg",
-    job: "Programmer",
-    photoURL:
-      "https://upload.wikimedia.org/wikipedia/commons/1/18/Mark_Zuckerberg_F8_2019_Keynote_%2832830578717%29_%28cropped%29.jpg",
-    age: 39,
-    id: 2,
-  },
-  {
-    displayName: "Bill G",
-    job: "Software Developer",
-    photoURL:
-      "https://www.mann-ivanov-ferber.ru/assets/media/authors-new/billG.jpg",
-    age: 37,
-    id: 3,
-  },
-];
+
 
 function HomeScreen({ navigation }) {
   const deviceLanguage = getLocales()[0].languageCode;
@@ -72,13 +47,7 @@ function HomeScreen({ navigation }) {
   const swipeRef = useRef(null);
   
 
-  useLayoutEffect(() => {
-    getDoc(doc(db, "users", user.uid)).then((snapShot) => {
-      if (!snapShot.exists()) {
-        navigation.navigate("Modal");
-      }
-    });
-  }, []);
+
 
   const renderNoMoreCards = () => {
     return (

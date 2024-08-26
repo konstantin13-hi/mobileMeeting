@@ -7,6 +7,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../firebase";
 
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
+import { useNavigation } from '@react-navigation/native';
+import { db, timestamp } from "../firebase";
 
 const AuthContext = createContext({
 
@@ -14,26 +26,26 @@ const AuthContext = createContext({
 })
 
 export const AuthProvider = ({children}) => {
+  const navigation = useNavigation();
    const[user,setUser] = useState(null);
    const [loading, setLoading] = useState(false);
    const [loadingInitial, setLoadingInitial] = useState(true);
+    const [isProfileComplete, setIsProfileComplete] = useState(false);
 
-  //  useEffect(() => {
-  //   // При загрузке компонента, проверяем наличие сохраненного пользователя в AsyncStorage
-  //   const fetchUser = async () => {
-  //     try {
-  //       const savedUser = await AsyncStorage.getItem('user');
-  //       if (savedUser) {
-  //         setUser(JSON.parse(savedUser));
-  //       }
-  //     } catch (error) {
-  //       // console.error('Error fetching user from AsyncStorage:', error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchUser();
-  // }, []);
+
+  useEffect(()=>{
+    if(user){
+        getDoc(doc(db, "users", user.uid)).then((snapShot) => {
+          if (!snapShot.exists()) {
+            navigation.navigate("FirstName");
+          }
+          else{
+            setIsProfileComplete(true);
+          }
+        });
+    }
+  })
+   
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -68,10 +80,17 @@ export const AuthProvider = ({children}) => {
     }
   };
 
-  const logout = () => {
-    signOut(auth).then(() => {
+  const logout = async () => {
+    try {
+      // Выполняем выход пользователя из Firebase
+      await signOut(auth);
+      
+      // Удаляем пользователя из состояния приложения
       setUser(null);
-    });
+      
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
 
 

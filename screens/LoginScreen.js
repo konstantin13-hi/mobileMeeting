@@ -66,6 +66,7 @@ export default function LoginScreen()  {
       signInWithEmailAndPassword(auth, mail, password)
         .then((userCredential) => {
           setLoading(false);
+        
         })
         .catch((error) => {
           setLoading(false);

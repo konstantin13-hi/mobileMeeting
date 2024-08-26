@@ -2,7 +2,7 @@
 
 
 import * as React from 'react';
-import StackNavigator from './StackNavigator';
+import StackNavigator from './stack/StackNavigator';
 import { AuthProvider } from './hooks/useAuth';
 import { NavigationContainer } from '@react-navigation/native';
 
