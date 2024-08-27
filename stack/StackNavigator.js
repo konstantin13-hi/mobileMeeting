@@ -14,6 +14,8 @@ import MatchScreen from '../screens/MatchScreen';
 import Account from '../screens/Account';
 import Language from '../screens/Language';
 import UserProfile from '../screens/UserProfile';
+import SplashScreen from '../components/SplashScreen';
+import { useState,useEffect } from 'react';
 
 
 import ProfileSetupStack from './ProfileSetupStack';
@@ -24,6 +26,18 @@ function StackNavigator() {
   const { user, isProfileComplete } = useHookAuth();
   // const { permissionType, setPermissionType, location } = useLocationPermission();
   // console.log(user);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Имитация проверки состояния авторизации и профиля
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // Замените на реальную проверку
+  }, []);
+
+  if (isLoading) {
+    return <SplashScreen />;
+  }
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (

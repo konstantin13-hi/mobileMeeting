@@ -33,19 +33,19 @@ export const AuthProvider = ({children}) => {
     const [isProfileComplete, setIsProfileComplete] = useState(false);
 
 
-  useEffect(()=>{
-    if(user){
-        getDoc(doc(db, "users", user.uid)).then((snapShot) => {
-          if (!snapShot.exists()) {
-            navigation.navigate("FirstName");
-          }
-          else{
-            setIsProfileComplete(true);
-          }
-        });
-    }
-  })
-   
+    useEffect(() => {
+      if (user && navigation.isReady()) {
+          getDoc(doc(db, "users", user.uid)).then((snapShot) => {
+              if (!snapShot.exists()) {
+                  navigation.navigate("FirstName");
+              } else {
+                  setIsProfileComplete(true);
+              }
+          }).catch(error => {
+              console.error("Error checking user profile:", error);
+          });
+      }
+  }, [user, navigation]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
