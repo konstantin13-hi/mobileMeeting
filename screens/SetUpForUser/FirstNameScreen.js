@@ -4,12 +4,20 @@ import { Button, View, Text, TouchableOpacity, TextInput,Dimensions, Platform ,M
 import ProgressBar from '../../components/ProgressBar';
 import * as React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useProfile } from '../../hooks/ProfileContext';
 
 
 
 const FirstNameScreen = ({ navigation }) => {
   const { width } = Dimensions.get('window');
-  const [firstName, setFirstName] = useState('');
+  const { profile, setProfile } = useProfile();
+  const [firstName, setFirstName] = useState(profile.firstName || '');
+  
+
+  const handleContinue = () => {
+    setProfile({ ...profile, firstName });
+    navigation.navigate('Birthday');
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -35,7 +43,7 @@ const FirstNameScreen = ({ navigation }) => {
           left: (width - 200) / 2, // Center the button horizontally
           opacity: firstName ? 1 : 0.5, // Adjust opacity based on input
         }}
-        onPress={() => navigation.navigate('Birthday')}
+        onPress={handleContinue}
         disabled={!firstName} // Disable button if no input
       >
         <View

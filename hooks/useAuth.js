@@ -31,26 +31,37 @@ export const AuthProvider = ({children}) => {
    const [loading, setLoading] = useState(false);
    const [loadingInitial, setLoadingInitial] = useState(true);
     const [isProfileComplete, setIsProfileComplete] = useState(false);
+    console.log("user_id= "+ user?.uid);
 
-
-    useEffect(() => {
-      if (user && navigation.isReady()) {
-          getDoc(doc(db, "users", user.uid)).then((snapShot) => {
-              if (!snapShot.exists()) {
-                  navigation.navigate("FirstName");
-              } else {
-                  setIsProfileComplete(true);
-              }
-          }).catch(error => {
-              console.error("Error checking user profile:", error);
-          });
-      }
-  }, [user, navigation]);
+    // useEffect(() => {
+    //   if (user && !loadingInitial && navigation.isReady()) { 
+    //     const checkUserProfile = async () => {
+    //       try {
+    //         const snapShot = await getDoc(doc(db, "users", user.uid));
+    //         if (!snapShot.exists()) {
+    //           navigation.navigate("FirstName");
+    //         } else {
+    //           setIsProfileComplete(true);
+    //         }
+    //       } catch (error) {
+    //         console.error("Error checking user profile:", error);
+    //       }
+    //     };
+    
+    //     checkUserProfile();
+    //   }
+    // }, [user, loadingInitial, navigation]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user);
+        const snapShot = await getDoc(doc(db, "users", user.uid));
+        if (!snapShot.exists()) {
+          navigation.navigate("FirstName");
+        } else {
+          setIsProfileComplete(true);
+        }
       } else {
         setUser(null);
       }
@@ -61,24 +72,24 @@ export const AuthProvider = ({children}) => {
     return unsubscribe;
   }, []);
 
-  const updateUser = async (newUser) => {
-    try {
-      setUser(newUser);
-      await AsyncStorage.setItem('user', JSON.stringify(newUser));
-    } catch (error) {
-      console.error('Error updating user in AsyncStorage:', error);
-    }
-  };
+  // const updateUser = async (newUser) => {
+  //   try {
+  //     setUser(newUser);
+  //     await AsyncStorage.setItem('user', JSON.stringify(newUser));
+  //   } catch (error) {
+  //     console.error('Error updating user in AsyncStorage:', error);
+  //   }
+  // };
 
-  const createUserInStorage = async (user) => {
-    try {
-        console.log("createUserInStorage= "+user)
-      await AsyncStorage.setItem('user', JSON.stringify(user));
-      setUser(user);
-    } catch (error) {
-      console.error('Error creating user in AsyncStorage:', error);
-    }
-  };
+  // const createUserInStorage = async (user) => {
+  //   try {
+  //       console.log("createUserInStorage= "+user)
+  //     await AsyncStorage.setItem('user', JSON.stringify(user));
+  //     setUser(user);
+  //   } catch (error) {
+  //     console.error('Error creating user in AsyncStorage:', error);
+  //   }
+  // };
 
   const logout = async () => {
     try {
@@ -95,7 +106,7 @@ export const AuthProvider = ({children}) => {
 
 
 
-   return (<AuthContext.Provider value={{logout,user,setUser,loading,setLoading,updateUser,createUserInStorage,loadingInitial, setLoadingInitial}}>
+   return (<AuthContext.Provider value={{logout,user,setUser,loading,setLoading,loadingInitial, setLoadingInitial,isProfileComplete,setIsProfileComplete}}>
     {children}
 
    </AuthContext.Provider>)

@@ -1,48 +1,54 @@
-
-import  { useState } from 'react';
-import { Button, View, Text, TouchableOpacity, TextInput,Dimensions, Platform ,Modal} from 'react-native';
+import React, { useState } from 'react';
+import { Button, View, Text, TouchableOpacity, TextInput, Dimensions, Platform, Modal } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import ProgressBar from '../../components/ProgressBar';
-import * as React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useProfile } from '../../hooks/ProfileContext';
 
+const BirthdayScreen = ({ navigation }) => {
+  const { width } = Dimensions.get('window');
+  const { profile, setProfile } = useProfile(); // Используем профиль из контекста
+  const [birthdate, setBirthdate] = useState(profile.birthDate || new Date()); // Устанавливаем начальную дату из profile
+  const [showPicker, setShowPicker] = useState(false);
+  console.log(profile)
 
- const BirthdayScreen = ({ navigation }) => {
-    const { width } = Dimensions.get('window');
-    const [birthdate, setBirthdate] = useState(new Date());
-    const [showPicker, setShowPicker] = useState(false);
-  
-    const onChange = (event, selectedDate) => {
-      const currentDate = selectedDate || birthdate;
-      setBirthdate(currentDate);
-    };
-  
-    const showDatePicker = () => {
-      setShowPicker(true); // Показать модальное окно с DateTimePicker
-    };
-  
-    const closeDatePicker = () => {
-      setShowPicker(false); // Скрыть модальное окно
-    };
-  
-    return (
-        <SafeAreaView style={{ flex: 1 }}>
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate || birthdate;
+    setBirthdate(currentDate);
+  };
+
+  const showDatePicker = () => {
+    setShowPicker(true); // Показать модальное окно с DateTimePicker
+  };
+
+  const closeDatePicker = () => {
+    setShowPicker(false); // Скрыть модальное окно
+  };
+
+  const handleContinue = () => {
+    setProfile({ ...profile, birthDate: birthdate }); // Обновляем дату рождения в profile
+    navigation.navigate('Gender'); // Переход к следующему экрану
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
       <View style={{ flex: 1, position: 'relative', padding: 20 }}>
-         <ProgressBar step={2} totalSteps={5} /> 
+        <ProgressBar step={2} totalSteps={5} />
         <Text style={{ fontSize: 24, marginBottom: 20, textAlign: 'center' }}>I am born on</Text>
-  
-        <TouchableOpacity onPress={showDatePicker} style={{ 
-          borderBottomWidth: 2,
-          width: width * 0.7,
-          alignSelf: 'center',
-          padding: 10,
-          alignItems: 'center',
-        }}>
-          <Text style={{ fontSize: 28 }}>
-            {birthdate.toLocaleDateString()}
-          </Text>
+
+        <TouchableOpacity
+          onPress={showDatePicker}
+          style={{
+            borderBottomWidth: 2,
+            width: width * 0.7,
+            alignSelf: 'center',
+            padding: 10,
+            alignItems: 'center',
+          }}
+        >
+          <Text style={{ fontSize: 28 }}>{birthdate.toLocaleDateString()}</Text>
         </TouchableOpacity>
-  
+
         <Modal
           visible={showPicker}
           transparent={true}
@@ -69,15 +75,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
             </View>
           </View>
         </Modal>
-  
+
         <TouchableOpacity
           style={{
             position: 'absolute',
             bottom: 100,
-            left: (width - 200) / 2, // Center the button horizontally
-            opacity: birthdate ? 1 : 0.5, // Adjust opacity based on input
+            left: (width - 200) / 2, // Центрируем кнопку по горизонтали
+            opacity: birthdate ? 1 : 0.5, // Изменяем прозрачность в зависимости от состояния
           }}
-          onPress={() => navigation.navigate('Gender')}
+          onPress={handleContinue}
         >
           <View
             style={{
@@ -87,17 +93,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
               backgroundColor: 'red',
               padding: 10,
               marginBottom: 10,
-              alignItems: 'center', // Center text horizontally
-              justifyContent: 'center', // Center text vertically
+              alignItems: 'center', // Центрируем текст по горизонтали
+              justifyContent: 'center', // Центрируем текст по вертикали
             }}
           >
             <Text style={{ color: 'white', fontSize: 18 }}>Continue</Text>
           </View>
         </TouchableOpacity>
       </View>
-      </SafeAreaView>
-    );
-  }
-  
+    </SafeAreaView>
+  );
+};
 
-  export default BirthdayScreen;
+export default BirthdayScreen;

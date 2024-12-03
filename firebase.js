@@ -29,7 +29,7 @@ if(!getApps().length){
     })
     
   }catch(error){
-    console.lor("error initiliatian"+error);
+    console.log("error initiliatian" + error);
   }
 }else{
   app = getApp();

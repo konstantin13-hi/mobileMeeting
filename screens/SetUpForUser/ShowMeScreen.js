@@ -1,35 +1,36 @@
-
-import { Button, View, Text, TouchableOpacity, TextInput,Dimensions, Platform ,Modal} from 'react-native';
-import * as React from 'react';
+import React from 'react';
+import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import ProgressBar from '../../components/ProgressBar';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
-const ShowMeScreen = ({ route, navigation }) =>{
-    const { width } = Dimensions.get('window');
-    const { selectedGender } = route.params;
-  
-    // Здесь переменная isContinueEnabled не нужна, так как не предполагается
-    // никакого дополнительного контроля активности кнопки
-  
-    return (
-        <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1,padding:20}}>
-         <ProgressBar step={4} totalSteps={5} /> 
+import { useProfile } from '../../hooks/ProfileContext'; // Импортируем useProfile
+
+const ShowMeScreen = ({ route, navigation }) => {
+  const { width } = Dimensions.get('window');
+  const { selectedGender } = route.params;
+  const { profile, setProfile } = useProfile(); // Используем профиль из контекста
+  console.log(profile)
+
+  // Сохраняем предпочтения пользователя
+  const handleContinue = () => {
+    setProfile({ ...profile, showMe: selectedGender === 'MAN' ? 'Man' : 'Woman' });
+    navigation.navigate('Photo'); // Переход на следующий экран
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1, padding: 20 }}>
+        <ProgressBar step={4} totalSteps={5} />
         <Text style={{ fontSize: 24, marginBottom: 20 }}>
           You want to find: {selectedGender === 'MAN' ? 'Man' : 'Woman'}
         </Text>
-  
+
         <TouchableOpacity
           style={{
             position: 'absolute',
             bottom: 100,
-            left: (width - 200) / 2, // Center the button horizontally
-            // Опция кнопки должна быть активной всегда в этом случае
+            left: (width - 200) / 2, // Центрируем кнопку по горизонтали
           }}
-          onPress={() => {
-            // Перенаправление на другой экран или выполнение какого-либо действия
-            navigation.navigate('Photo'); 
-          }}
+          onPress={handleContinue} // Обработчик кнопки
         >
           <View
             style={{
@@ -39,18 +40,16 @@ const ShowMeScreen = ({ route, navigation }) =>{
               backgroundColor: 'red',
               padding: 10,
               marginBottom: 10,
-              alignItems: 'center', // Center text horizontally
-              justifyContent: 'center', // Center text vertically
+              alignItems: 'center', // Центрируем текст по горизонтали
+              justifyContent: 'center', // Центрируем текст по вертикали
             }}
           >
             <Text style={{ color: 'white', fontSize: 18 }}>Continue</Text>
           </View>
         </TouchableOpacity>
       </View>
-      </SafeAreaView>
-    );
-  }
-
-
+    </SafeAreaView>
+  );
+};
 
 export default ShowMeScreen;
