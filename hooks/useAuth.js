@@ -70,7 +70,43 @@ export const AuthProvider = ({children}) => {
     });
 
     return unsubscribe;
-  }, []);
+  }, [user]);
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, (user) => {
+//         setLoadingInitial(true); // Начинаем загрузку
+//         if (user) {
+//             setUser(user);
+//         } else {
+//             setUser(null);
+//             setIsProfileComplete(false); // Сбрасываем состояние профиля
+//         }
+//         setLoadingInitial(false); // Завершаем начальную загрузку
+//     });
+
+//     return unsubscribe;
+// }, []);
+
+// useEffect(() => {
+//     if (user && navigation.isReady()) {
+//         const checkUserProfile = async () => {
+//             try {
+//                 setLoading(true);
+//                 const snapShot = await getDoc(doc(db, "users", user.uid));
+//                 if (!snapShot.exists()) {
+//                     navigation.navigate("FirstName"); // Перенаправляем на FirstName
+//                 } else {
+//                     setIsProfileComplete(true);
+//                 }
+//             } catch (error) {
+//                 console.error("Error checking user profile:", error);
+//             } finally {
+//                 setLoading(false); // Отключаем индикатор загрузки
+//             }
+//         };
+
+//         checkUserProfile();
+//     }
+// }, [user, navigation.isReady()]);
 
   // const updateUser = async (newUser) => {
   //   try {

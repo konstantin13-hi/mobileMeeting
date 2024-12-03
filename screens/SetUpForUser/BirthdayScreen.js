@@ -4,6 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import ProgressBar from '../../components/ProgressBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useProfile } from '../../hooks/ProfileContext';
+import {Ionicons } from "@expo/vector-icons";
 
 const BirthdayScreen = ({ navigation }) => {
   const { width } = Dimensions.get('window');
@@ -33,8 +34,15 @@ const BirthdayScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={{ flex: 1, position: 'relative', padding: 20 }}>
-        <ProgressBar step={2} totalSteps={5} />
-        <Text style={{ fontSize: 24, marginBottom: 20, textAlign: 'center' }}>I am born on</Text>
+    
+        <ProgressBar step={2} totalSteps={5} style={{marginBottom:0}}/>
+
+     <TouchableOpacity
+          className="p-2"
+          onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back-outline" size={34} color="#FF5864" />
+        </TouchableOpacity>
+        <Text style={{ fontSize: 24, textAlign: 'center' }}>I am born on</Text>
 
         <TouchableOpacity
           onPress={showDatePicker}

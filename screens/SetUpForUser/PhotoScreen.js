@@ -10,34 +10,66 @@ import { ActivityIndicator } from 'react-native';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db,storage} from '../../firebase';
 import {ref ,uploadBytes, getDownloadURL} from'firebase/storage'
+import {Ionicons } from "@expo/vector-icons";
+
+import * as ImageManipulator from 'expo-image-manipulator';
+
 
 const PhotoScreen = ({ navigation }) => {
   const [photos, setPhotos] = useState([]);
-  const { user } = useHookAuth();
+  const { user,isProfileComplete,setIsProfileComplete } = useHookAuth();
   console.log(user);
   const [loading, setLoading] = useState(false);
   const { profile, setProfile } = useProfile();
-
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
+  
     if (!permissionResult.granted) {
       Alert.alert("Permission Denied", "Permission to access your photo library is required!");
       return;
     }
-
+  
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
       quality: 1,
     });
-
+  
     if (!result.canceled && result.assets) {
-      const newPhotos = result.assets.map((asset) => asset.uri);
-      setPhotos((prev) => [...prev, ...newPhotos]);
+      const maxWidth = 2000;
+      const maxHeight = 2000;
+      const compressedPhotos = [];
+  
+      for (const asset of result.assets) {
+        try {
+          if (asset.width > maxWidth || asset.height > maxHeight) {
+            console.log(`Resizing photo: ${asset.uri}`);
+            const manipResult = await ImageManipulator.manipulateAsync(
+              asset.uri,
+              [{ resize: { width: maxWidth, height: maxHeight } }],
+              { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+            );
+            compressedPhotos.push(manipResult.uri);
+          } else {
+            console.log(`Photo ${asset.uri} fits size requirements.`);
+            compressedPhotos.push(asset.uri);
+          }
+        } catch (error) {
+          console.error("Error processing photo:", error);
+          Alert.alert("Error", "An error occurred while processing your photos.");
+        }
+      }
+  
+      if (compressedPhotos.length === 0) {
+        Alert.alert("No Photos", "No valid photos could be added.");
+        return;
+      }
+  
+      setPhotos((prev) => [...prev, ...compressedPhotos]);
+      console.log("Compressed Photos:", compressedPhotos);
     }
   };
-
+  
   const handleNext = async () => {
     if (photos.length < 1) {
       Alert.alert("Insufficient Photos", "Please upload at least 1 photo.");
@@ -45,9 +77,8 @@ const PhotoScreen = ({ navigation }) => {
     }
   
     setLoading(true); // Включаем индикатор загрузки
-    
+  
     try {
-      // Загружаем фото в Firebase Storage и получаем их URL
       const uploadedPhotoUrls = [];
       for (const photo of photos) {
         const response = await fetch(photo); // Получаем blob для каждого фото
@@ -58,18 +89,17 @@ const PhotoScreen = ({ navigation }) => {
         uploadedPhotoUrls.push(downloadURL); // Сохраняем URL в массив
       }
   
-      // Создаём новый объект профиля с URL фотографий
       const updatedProfile = {
         ...profile, // Копируем все существующие данные профиля
         photos: uploadedPhotoUrls, // Добавляем массив с URL фотографий
       };
   
-      // Сохраняем данные в Firestore
       const docRef = doc(db, "users", user.uid);
       await setDoc(docRef, updatedProfile);
       console.log("User profile updated successfully!");
       Alert.alert("Profile Updated", "Your profile has been successfully updated!");
-      navigation.navigate('Home')
+      setIsProfileComplete(true);
+      // navigation.navigate("Home");
     } catch (error) {
       console.error("Error saving user profile:", error);
       Alert.alert("Error", "An error occurred while saving your profile.");
@@ -85,6 +115,11 @@ const PhotoScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ProgressBar step={5} totalSteps={5} />
+      <TouchableOpacity
+          className="p-2"
+          onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back-outline" size={34} color="#FF5864" />
+        </TouchableOpacity>
       <Text style={styles.headerText}>Upload at least 3 photos</Text>
   
       {loading ? (

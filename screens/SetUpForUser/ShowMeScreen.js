@@ -3,12 +3,13 @@ import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import ProgressBar from '../../components/ProgressBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useProfile } from '../../hooks/ProfileContext'; // Импортируем useProfile
+import {Ionicons } from "@expo/vector-icons";
 
 const ShowMeScreen = ({ route, navigation }) => {
   const { width } = Dimensions.get('window');
   const { selectedGender } = route.params;
   const { profile, setProfile } = useProfile(); // Используем профиль из контекста
-  console.log(profile)
+
 
   // Сохраняем предпочтения пользователя
   const handleContinue = () => {
@@ -20,6 +21,12 @@ const ShowMeScreen = ({ route, navigation }) => {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={{ flex: 1, padding: 20 }}>
         <ProgressBar step={4} totalSteps={5} />
+
+       <TouchableOpacity
+          className="p-2"
+          onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back-outline" size={34} color="#FF5864" />
+        </TouchableOpacity>
         <Text style={{ fontSize: 24, marginBottom: 20 }}>
           You want to find: {selectedGender === 'MAN' ? 'Man' : 'Woman'}
         </Text>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button, View, Text, TouchableOpacity, Dimensions, SafeAreaView } from 'react-native';
 import ProgressBar from '../../components/ProgressBar';
 import { useProfile } from '../../hooks/ProfileContext';// Импортируем useProfile
+import {Ionicons } from "@expo/vector-icons";
 
 const GenderScreen = ({ navigation }) => {
   const { width } = Dimensions.get('window');
@@ -21,6 +22,12 @@ const GenderScreen = ({ navigation }) => {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={{ flex: 1, position: 'relative', padding: 20 }}>
         <ProgressBar step={3} totalSteps={5} />
+
+     <TouchableOpacity
+          className="p-2"
+          onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back-outline" size={34} color="#FF5864" />
+        </TouchableOpacity>
         <Text style={{ fontSize: 24, marginBottom: 20, textAlign: 'center' }}>I am ...</Text>
 
         <TouchableOpacity
