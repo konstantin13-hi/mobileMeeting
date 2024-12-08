@@ -60,7 +60,7 @@ const PhotoScreen = ({ navigation }) => {
       }
 
        // Ограничиваем массив до первых шести фотографий
-      setPhotos((prev) => [...prev, ...compressedPhotos].slice(0, 6));
+    setPhotos((prev) => [...prev, ...compressedPhotos].slice(0, 6));
       console.log("Compressed Photos:", compressedPhotos);
     }
   };
@@ -70,19 +70,24 @@ const PhotoScreen = ({ navigation }) => {
       Alert.alert("Insufficient Photos", "Please upload at least 1 photo.");
       return;
     }
-
-    setLoading(true); // Включаем индикатор загрузки
-
+  
+    setLoading(true);
+  
     try {
-      // Загружаем несколько фотографий через сервис
+      // Загружаем фото и получаем их URL
       const uploadedPhotoUrls = await uploadMultiplePhotos(user.uid, photos);
-
+  
+      // Сохраняем их в Firestore в единственное поле photos
       const updatedProfile = {
-        ...profile, // Копируем все существующие данные профиля
-        photos: uploadedPhotoUrls, // Добавляем массив с URL фотографий
+        ...profile,
+        photos: uploadedPhotoUrls,
       };
-
+  
       await saveUserProfile(user.uid, updatedProfile);
+  
+      // Обновляем локальное состояние
+      setPhotos(uploadedPhotoUrls);
+  
       console.log("User profile updated successfully!");
       Alert.alert("Profile Updated", "Your profile has been successfully updated!");
       setIsProfileComplete(true);
@@ -90,7 +95,7 @@ const PhotoScreen = ({ navigation }) => {
       console.error("Error saving user profile:", error);
       Alert.alert("Error", "An error occurred while saving your profile.");
     } finally {
-      setLoading(false); // Выключаем индикатор загрузки
+      setLoading(false);
     }
   };
 
