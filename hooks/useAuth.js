@@ -70,7 +70,7 @@ export const AuthProvider = ({children}) => {
     });
 
     return unsubscribe;
-  }, [user]);
+  }, []);
 //   useEffect(() => {
 //     const unsubscribe = onAuthStateChanged(auth, (user) => {
 //         setLoadingInitial(true); // Начинаем загрузку
