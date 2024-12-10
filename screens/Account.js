@@ -1,5 +1,5 @@
 import React, { useState , useEffect} from 'react';
-import { Text, View, Button, Switch, StyleSheet, TouchableOpacity,FlatList ,ScrollView,Modal} from 'react-native';
+import { Text, View, Button, Switch, StyleSheet, TouchableOpacity,FlatList ,ScrollView,Modal,ActivityIndicator,SafeAreaView} from 'react-native';
 import Language from './Language';
 import useHookAuth from '../hooks/useAuth';
 import { Image } from 'react-native';
@@ -10,212 +10,226 @@ import { db, timestamp ,storage} from "../firebase";
 import useAuth from "../hooks/useAuth";
 import { doc, getDoc } from "firebase/firestore";
 import ProfileDescription from '../components/ProfileDescription';
-
+import {deleteUserPhoto ,replaceUserPhoto,uploadUserPhoto ,uploadUserOnePhoto} from '../services/userService';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 const Account = ({ navigation }) => {
   const { user } = useAuth();
   const [language, setLanguage] = useState('english');
   const [darkMode, setDarkMode] = useState(false);
-  const {logout} = useHookAuth();
+  const { logout } = useHookAuth();
   const [modalVisible, setModalVisible] = useState(false);
-  const [squares, setSquares] = useState([1]); // Начальный квадрат
-  const [imageUrls, setImageUrls] = useState([]);
-  console.log(user);
-
-
-  const fetchUserImages = async (uid) => {
-    try {
-      // Получаем ссылку на документ пользователя в Firestore
-      const userDocRef = doc(db, "users", uid);
-      const userDocSnap = await getDoc(userDocRef);
-  
-      // Проверяем, существует ли документ
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-  
-        // Предполагаем, что массив URL фотографий хранится в поле profileImages
-        const profileImages = userData.profileImages || [];
-  
-        // Возвращаем первые 5 URL (или меньше, если их меньше 5)
-        return profileImages.slice(0, 5);
-      } else {
-        console.log("No such document!");
-        return [];
-      }
-    } catch (error) {
-      console.error("Error fetching user images: ", error);
-      return [];
-    }
-  };
-
+  const [selectedImageUri, setSelectedImageUri] = useState(null);
+  const [imageUrls, setImageUrls] = useState([]); 
+  const [isFetching, setIsFetching] = useState(false);
+  console.log(imageUrls);
 
   useEffect(() => {
     const fetchImages = async () => {
-      const images = await fetchUserImages(user.uid);
-      setImageUrls(images);
+      setIsFetching(true);
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          const userData = userDocSnap.data();
+          setImageUrls(userData.photos || []);
+        }
+      } catch (error) {
+        console.error("Error fetching user images: ", error);
+      } finally {
+        setIsFetching(false);
+      }
     };
-    console.log(user.uid)
 
     fetchImages();
   }, [user.uid]);
 
-  const handleLanguageChange = (lang) => {
-    setLanguage(lang);
-  };
-
-  const handleThemeChange = () => {
-    setDarkMode((prevMode) => !prevMode);
-  };
-
-  const handleLogout = () => {
-    logout();
-  };
-
-  const handleDeleteAccount = () => {
-    // Реализация удаления аккаунта
-  };
+  const handleAddImage = async (placeholderIndex) => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert("Permission Denied", "Permission to access your photo library is required!");
+        return;
+      }
   
-    // Функция для рендеринга каждого элемента
-    const renderItem = ({ item }) => (
-      <TouchableOpacity style={styles.container} onPress={() => setModalVisible(true)} >
- 
-        <Image
-          source={{ uri: item }}
-          style={styles.image}
-        />
-          <Trash ></Trash>
-      </TouchableOpacity>
-    );
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: false,
+        quality: 1,
+      });
   
-
-
-
-  const addSquare = () => {
-    setSquares([...squares, squares.length + 1]);
-  };
-
-  const handleAddImage = async () => {
-    const downloadURL = await pickImage(db, storage, user.uid, setImageUrls); // Передаем необходимые параметры
-    if (downloadURL) {
-      console.log('Image added:', downloadURL);
-      // Теперь массив `imageUrls` уже обновлен внутри `pickImage`
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const maxWidth = 2000;
+        const maxHeight = 2000;
+        let photoUri = result.assets[0].uri;
+  
+        // Resize photo if needed
+        const asset = result.assets[0];
+        if (asset.width > maxWidth || asset.height > maxHeight) {
+          console.log(`Resizing photo: ${photoUri}`);
+          const manipResult = await ImageManipulator.manipulateAsync(
+            photoUri,
+            [{ resize: { width: maxWidth, height: maxHeight } }],
+            { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+          );
+          photoUri = manipResult.uri;
+        }
+  
+        // Upload photo to Firebase and get URL
+        const downloadURL = await uploadUserOnePhoto(user.uid, photoUri);
+        console.log("downLadURl"+downloadURL);
+  
+        if (downloadURL) {
+          // Обновляем состояние хука imageUrls
+          setImageUrls((prev)=>[...prev,downloadURL]);
+        }
+      } else {
+        console.log("No photo selected or operation canceled.");
+      }
+    } catch (error) {
+      console.error("Error adding image:", error);
+      Alert.alert("Error", "An error occurred while adding the image.");
     }
   };
-  console.log()
+  
+
+  const handleDeleteImage = async () => {
+    if (!selectedImageUri) return;
+
+    try {
+      await deleteUserPhoto(user.uid, selectedImageUri);
+      setImageUrls((prev) => prev.filter((url) => url !== selectedImageUri));
+      setSelectedImageUri(null);
+      setModalVisible(false);
+    } catch (error) {
+      console.error("Error deleting photo:", error);
+    }
+  };
 
   
- 
+  const handleReplaceImage = async () => {
+    if (!selectedImageUri) return;
+  
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert("Permission Denied", "Permission to access your photo library is required!");
+      return;
+    }
+  
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: false, // Разрешаем выбрать только одно фото
+      quality: 1,
+    });
+  
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const maxWidth = 2000;
+      const maxHeight = 2000;
+  
+      try {
+        const originalPhotoUri = result.assets[0].uri;
+        let resizedPhotoUri = originalPhotoUri;
+  
+        // Проверяем и ресайзим, если необходимо
+        const asset = result.assets[0];
+        if (asset.width > maxWidth || asset.height > maxHeight) {
+          console.log(`Resizing photo: ${originalPhotoUri}`);
+          const manipResult = await ImageManipulator.manipulateAsync(
+            originalPhotoUri,
+            [{ resize: { width: maxWidth, height: maxHeight } }],
+            { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+          );
+          resizedPhotoUri = manipResult.uri;
+        } else {
+          console.log(`Photo ${originalPhotoUri} fits size requirements.`);
+        }
+  
+        // Вызов метода замены фото в userService
+        const newPhotoUrl = await replaceUserPhoto(user.uid, selectedImageUri, resizedPhotoUri);
+  
+        // Обновляем список фото
+        setImageUrls((prev) =>
+          prev.map((url) => (url === selectedImageUri ? newPhotoUrl : url))
+        );
+  
+        // Сбрасываем состояние выбранного изображения и закрываем модальное окно
+        setSelectedImageUri(null);
+        setModalVisible(false);
+      } catch (error) {
+        console.error("Error processing or replacing image:", error);
+        Alert.alert("Error", "An error occurred while replacing the image.");
+      }
+    } else {
+      console.log("No photo selected or operation canceled.");
+    }
+  };
+
+  const renderImage = ({ item, index }) => {
+    const hasImage = !!item;
+  
+    return (
+      <TouchableOpacity
+        style={[
+          styles.gridItem,
+          { backgroundColor: hasImage ? 'transparent' : 'gray' }, // Светло-серый фон для пустой ячейки
+          !hasImage && styles.addPhotoButton, // Стили кнопки "Добавить фото"
+        ]}
+        onPress={() => {
+          if (hasImage) {
+            setSelectedImageUri(item);
+            setModalVisible(true);
+          } else {
+            handleAddImage();
+          }
+        }}
+      >
+        {hasImage ? (
+          <Image source={{ uri: item }} style={styles.image} />
+        ) : (
+          <Text style={styles.addPhotoText}>+</Text> // Плюс, если нет изображения
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
-   
-  //   <View >
-  //     <View>
-  //     <FlatList
-  //     data={imageUrlsData} // Данные для отображения
-  //     renderItem={renderItem} // Функция рендеринга каждого элемента
-  //     keyExtractor={(item) => item} // Ключ для каждого элемента
-  //   />
-  //       {/* <View  style={{ 
-  //          borderRadius: 20, // Радиус скругления углов
-  //         width: 200, // Ширина контейнера
-  //         height: 200, // Высота контейнера // Внутренние отступы
-  //         margin: 20, // Внешние отступы
-  //         borderWidth: 2, // Ширина рамки
-  //         borderColor: 'black', // Цвет рамки
-  //         overflow: 'hidden'
-  // }}>
-  //         <Image  source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/4/48/Outdoors-man-portrait_%28cropped%29.jpg' }}
-  //         style={{  width: '100%', 
-  //         height: '100%',
-  //        }}
-  //         >
-  //         </Image>
-  //       </View> */}
-  //     </View>
-
-
-     
-      
-   
-  //     <Text>photos</Text>
-  //     <Text style={styles.title}>Account Settings</Text>
-
-
-  //     <TouchableOpacity onPress={()=>navigation.navigate("Language")}>
-  //     <View style={styles.setting} >
-  //       <Text>Select App Language:</Text>
-      
-  //     </View>
-  //     </TouchableOpacity>
-
-      
-
-  //     <View style={styles.setting}>
-  //       <Text>Select Theme:</Text>
-  //       <Switch value={darkMode} onValueChange={handleThemeChange} />
-  //     </View>
-
-  //     <TouchableOpacity onPress={logout}>
-        
-  //          <View  className= "h-10 w-10 rounded-full" >
-  //           <Text>Log out</Text>
-  //          </View>
-  //       </TouchableOpacity>
-
-     
-  //     <Button title="Delete Account"  />
-  //   </View>
-  <View style={styles.flexContainer}>
-  <FlatList
-  keyExtractor={(item) => item}
-  ListHeaderComponent={() => (
-    <View style={styles.gridContainer}>
-    {imageUrls.length > 0 && imageUrls.map((item, index) => (
-      <TouchableOpacity key={index} style={styles.gridItem} onPress={() => setModalVisible(true)} >
-        <Image
-          source={{ uri: item }}
-          style={styles.image}
+    <View style={styles.flexContainer}>
+      {isFetching ? (
+        <Text>Loading...</Text>
+      ) : (
+        <FlatList
+         data={Array.from({ length: 6 }, (_, index) => imageUrls[index] || null)} // Создание фиксированного списка
+         renderItem={renderImage}
+         keyExtractor={(item, index) => `image-${index}`} // Стабильный ключ
+         numColumns={3}
+         extraData={imageUrls} 
+          ListFooterComponent={() => (
+            <View>
+              <Text style={styles.title}>Account Settings</Text>
+              <ProfileDescription />
+              <TouchableOpacity onPress={() => navigation.navigate("Language")}>
+                <View style={styles.setting}>
+                  <Text>Select App Language:</Text>
+                </View>
+              </TouchableOpacity>
+              <View style={styles.setting}>
+                <Text>Select Theme:</Text>
+                <Switch value={darkMode} onValueChange={() => setDarkMode(!darkMode)} />
+              </View>
+              <TouchableOpacity onPress={logout}>
+                <View style={styles.logoutButton}>
+                  <Text>Log out</Text>
+                </View>
+              </TouchableOpacity>
+              <Button title="Delete Account" onPress={() => {}} />
+            </View>
+          )}
         />
-        <Trash />
-      </TouchableOpacity>
-    ))}
-    <TouchableOpacity style={styles.gridItem} onPress={handleAddImage} >
-       
-       <Plus></Plus>
-      </TouchableOpacity>
-  </View>
-  )}
-  ListFooterComponent={() => (
-    <View>
+      )}
 
-      <Text>Photos</Text>
-      <Text style={styles.title}>Account Settings</Text>
-      <ProfileDescription></ProfileDescription>
-     
-
-      <TouchableOpacity onPress={() => navigation.navigate("Language")}>
-        <View style={styles.setting}>
-          <Text>Select App Language:</Text>
-        </View>
-      </TouchableOpacity>
-
-      <View style={styles.setting}>
-        <Text>Select Theme:</Text>
-        <Switch value={darkMode} onValueChange={handleThemeChange} />
-      </View>
-
-      <TouchableOpacity onPress={logout}>
-        <View style={styles.logoutButton}>
-          <Text>Log out</Text>
-        </View>
-      </TouchableOpacity>
-
-      <Button title="Delete Account" onPress={() => { /* Handle delete account */ }} />
-    </View>
-  )}
-/>
-
-{/* Модальное окно для действий (delete, replace, cancel) */}
-<Modal
+      {/* Modal */}
+      <Modal
         transparent={true}
         visible={modalVisible}
         animationType="slide"
@@ -223,10 +237,13 @@ const Account = ({ navigation }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <TouchableOpacity style={styles.button} onPress={() => { /* Handle delete */ }}>
+            <TouchableOpacity style={styles.button} onPress={handleDeleteImage}>
               <Text style={styles.buttonText}>Delete</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => { /* Handle replace */ }}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleReplaceImage}
+            >
               <Text style={styles.buttonText}>Replace</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.button} onPress={() => setModalVisible(false)}>
@@ -235,11 +252,8 @@ const Account = ({ navigation }) => {
           </View>
         </View>
       </Modal>
-
-
-</View>
+    </View>
   );
-
 };
 
 const styles = StyleSheet.create({
@@ -339,6 +353,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',   // Центрирование текста по горизонтали
     overflow: 'hidden', 
   },
+  addPhotoButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  addPhotoText: {
+    fontSize: 30,
+    color: 'white',
+  },
 });
 
+
 export default Account;
+
+

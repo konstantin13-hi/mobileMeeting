@@ -3,6 +3,7 @@ import { db, storage } from '../firebase';
 import { doc, setDoc,arrayUnion,updateDoc,arrayRemove } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL,deleteObject  } from 'firebase/storage';
 
+
 export const saveUserProfile = async (userId, userData) => {
   try {
     const userDocRef = doc(db, "users", userId);
@@ -27,6 +28,21 @@ export const uploadUserPhoto = async (userId, photoUri) => {
     throw error;
   }
 };
+
+export const uploadUserOnePhoto = async(userId, photoUrl) =>{
+  try{
+  
+   const uploadPromise = await uploadUserPhoto(userId,photoUrl);
+   const userDocRef = doc(db,"users",userId);
+   await setDoc(userDocRef,{photos:arrayUnion(uploadPromise)},{merge:true})
+
+  
+
+  return uploadPromise;
+  }catch(error){
+    console.log('Error uploading one photo to user firebase',error)
+  }
+}
 
 // Функция для загрузки нескольких фотографий
 export const uploadMultiplePhotos = async (userId, photos) => {
@@ -64,6 +80,33 @@ export const deleteUserPhoto = async (userId, photoUrl) => {
     console.log("Photo deleted successfully");
   } catch (error) {
     console.error("Error deleting photo:", error);
+    throw error;
+  }
+};
+
+
+export const replaceUserPhoto = async (userId, oldPhotoUrl, newPhotoUri) => {
+  try {
+    // Remove the old photo
+    await deleteUserPhoto(userId, oldPhotoUrl);
+
+    // Add the new photo
+    const fileRef = ref(storage, `users/${userId}/${Date.now()}`);
+    const response = await fetch(newPhotoUri);
+    const blob = await response.blob();
+
+    await uploadBytes(fileRef, blob);
+    const downloadURL = await getDownloadURL(fileRef);
+
+    // Update Firestore array
+    const userDocRef = doc(db, "users", userId);
+    await updateDoc(userDocRef, {
+      photos: arrayUnion(downloadURL),
+    });
+
+    return downloadURL;
+  } catch (error) {
+    console.error("Error replacing user photo: ", error);
     throw error;
   }
 };
