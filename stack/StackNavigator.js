@@ -55,8 +55,8 @@ function StackNavigator() {
                         <Stack.Screen name="Language" component={Language} options={{ headerShown: true }} />
                     </Stack.Group>
 
-                    <Stack.Group screenOptions={{ presentation: 'modal' }}>
-                        <Stack.Screen name="Modal" component={ModalScreen} />
+                    <Stack.Group >
+                        <Stack.Screen name="Modal" component={ModalScreen} options={{ headerShown: true }}/>
                     </Stack.Group>
 
                     <Stack.Group screenOptions={{ presentation: 'transparentModal' }}>

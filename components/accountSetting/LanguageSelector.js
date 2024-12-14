@@ -1,29 +1,17 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Modal,
-  Button,
-} from "react-native";
-import { Chip } from "@rneui/themed"; // React Native Elements
+import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Button } from "react-native";
+import { Chip } from "@rneui/themed";
 
-const ModalScreen = () => {
-  const [selectedLanguages, setSelectedLanguages] = useState([]);
+const LanguageSelector = ({ selectedLanguages, setSelectedLanguages }) => {
   const [isModalVisible, setModalVisible] = useState(false);
 
   const availableLanguages = ["English", "Russian", "Spanish", "French", "German"];
 
   const handleLanguageClick = (language) => {
-    // Проверяем, срабатывает ли функция
-    console.log("Clicked language:", language);
-
     setSelectedLanguages((prev) =>
       prev.includes(language)
-        ? prev.filter((item) => item !== language) // Удаляем язык, если он уже выбран
-        : [...prev, language] // Добавляем новый язык
+        ? prev.filter((item) => item !== language)
+        : [...prev, language]
     );
   };
 
@@ -32,9 +20,7 @@ const ModalScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Display Selected Languages */}
-      <Text style={styles.header}>Languages</Text>
+    <View>
       <TouchableOpacity onPress={toggleModal}>
         <View style={styles.chipContainer}>
           {selectedLanguages.length > 0 ? (
@@ -53,7 +39,6 @@ const ModalScreen = () => {
         </View>
       </TouchableOpacity>
 
-      {/* Modal for Language Selection */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -68,7 +53,7 @@ const ModalScreen = () => {
                 <Chip
                   key={language}
                   title={language}
-                  onPress={() => handleLanguageClick(language)} // Убедитесь, что функция привязана здесь
+                  onPress={() => handleLanguageClick(language)}
                   buttonStyle={[
                     styles.modalChip,
                     selectedLanguages.includes(language) && styles.selectedChip,
@@ -90,17 +75,6 @@ const ModalScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0d1b2a",
-    padding: 20,
-  },
-  header: {
-    fontSize: 18,
-    color: "#fff",
-    marginBottom: 10,
-    fontWeight: "bold",
-  },
   chipContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -122,7 +96,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    backgroundColor: "#0d1b2a",
+    backgroundColor: "#505050",
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -145,4 +119,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ModalScreen;
+export default LanguageSelector;

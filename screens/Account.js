@@ -9,8 +9,9 @@ import {pickImage} from '../lib/imagePicker'
 import { db, timestamp ,storage} from "../firebase";
 import useAuth from "../hooks/useAuth";
 import { doc, getDoc } from "firebase/firestore";
-import ProfileDescription from '../components/ProfileDescription';
+import ProfileDescription from '../components/accountSetting/ProfileDescription';
 import {deleteUserPhoto ,replaceUserPhoto,uploadUserPhoto ,uploadUserOnePhoto} from '../services/userService';
+import LanguageSelector from '../components/accountSetting/LanguageSelector';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 
@@ -23,6 +24,7 @@ const Account = ({ navigation }) => {
   const [selectedImageUri, setSelectedImageUri] = useState(null);
   const [imageUrls, setImageUrls] = useState([]); 
   const [isFetching, setIsFetching] = useState(false);
+  const [selectedLanguages, setSelectedLanguages] = useState([]);
   console.log(imageUrls);
 
   useEffect(() => {
@@ -208,11 +210,17 @@ const Account = ({ navigation }) => {
             <View>
               <Text style={styles.title}>Account Settings</Text>
               <ProfileDescription />
-              <TouchableOpacity onPress={() => navigation.navigate("Language")}>
+              {/* <TouchableOpacity onPress={() => navigation.navigate("Language")}>
                 <View style={styles.setting}>
+                  </View>
+                  </TouchableOpacity> */}
                   <Text>Select App Language:</Text>
-                </View>
-              </TouchableOpacity>
+                  <LanguageSelector
+                  selectedLanguages={selectedLanguages}
+                  setSelectedLanguages={setSelectedLanguages}
+              />
+                
+           
               <View style={styles.setting}>
                 <Text>Select Theme:</Text>
                 <Switch value={darkMode} onValueChange={() => setDarkMode(!darkMode)} />
@@ -259,6 +267,7 @@ const Account = ({ navigation }) => {
 const styles = StyleSheet.create({
   flexContainer: {
     flex: 1,
+    backgroundColor:'rgb(38, 56, 78)',
   },
   scrollContainer: {
     flexGrow: 1, // Позволяет ScrollView заполнять доступное пространство

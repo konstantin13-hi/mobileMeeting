@@ -25,5 +25,11 @@ gps checkins site = https://www.gps-coordinates.net
 
 
 
+ добавил для чипсов готовую библиотеку 
+    React Native Elements: Это основная библиотека для таких компонентов, как Chip, Switch, и других.
+    npm install @rneui/themed @rneui/base
+    
+
+
 
 
