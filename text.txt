@@ -29,7 +29,9 @@ gps checkins site = https://www.gps-coordinates.net
     React Native Elements: Это основная библиотека для таких компонентов, как Chip, Switch, и других.
     npm install @rneui/themed @rneui/base
     
-
+для чтобы использовать slider у которого два кружка нужно импортировать библиотеку 
+  https://www.npmjs.com/package/@ptomasroos/react-native-multi-slider
+  
 
 
 

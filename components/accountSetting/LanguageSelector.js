@@ -1,11 +1,57 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Button } from "react-native";
 import { Chip } from "@rneui/themed";
+import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
-const LanguageSelector = ({ selectedLanguages, setSelectedLanguages }) => {
+const LanguageSelector = ({ userId }) => {
+  const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true); // Состояние загрузки
+  const [hasUserEdited, setHasUserEdited] = useState(false); // Флаг взаимодействия
 
   const availableLanguages = ["English", "Russian", "Spanish", "French", "German"];
+
+  useEffect(() => {
+    const fetchUserLanguages = async () => {
+      setLoading(true); // Начало загрузки
+      try {
+        const userDocRef = doc(db, "users", userId);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (!hasUserEdited) {
+            setSelectedLanguages(userData.languages || []); // Устанавливаем только если пользователь не редактировал
+          }
+        } else {
+          await setDoc(userDocRef, { languages: [] }, { merge: true }); // Создаем документ
+        }
+      } catch (error) {
+        console.error("Error fetching user languages:", error);
+      } finally {
+        setLoading(false); // Завершение загрузки
+      }
+    };
+
+    fetchUserLanguages();
+  }, [userId, hasUserEdited]); // Обновляем при смене userId или взаимодействии пользователя
+
+  useEffect(() => {
+    if (loading) return; // Пропускаем, если данные ещё загружаются
+
+    const handler = setTimeout(async () => {
+      if (!hasUserEdited) return; // Обновляем только если пользователь изменил данные
+      try {
+        const userDocRef = doc(db, "users", userId);
+        await updateDoc(userDocRef, { languages: selectedLanguages });
+        console.log("Languages updated successfully:", selectedLanguages);
+      } catch (error) {
+        console.error("Error updating languages in Firestore:", error);
+      }
+    }, 500);
+
+    return () => clearTimeout(handler); // Очищаем таймер
+  }, [selectedLanguages, hasUserEdited, loading]);
 
   const handleLanguageClick = (language) => {
     setSelectedLanguages((prev) =>
@@ -13,6 +59,7 @@ const LanguageSelector = ({ selectedLanguages, setSelectedLanguages }) => {
         ? prev.filter((item) => item !== language)
         : [...prev, language]
     );
+    setHasUserEdited(true); // Флаг взаимодействия пользователя
   };
 
   const toggleModal = () => {

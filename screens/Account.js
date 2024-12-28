@@ -14,6 +14,7 @@ import {deleteUserPhoto ,replaceUserPhoto,uploadUserPhoto ,uploadUserOnePhoto} f
 import LanguageSelector from '../components/accountSetting/LanguageSelector';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import RangeSelector from '../components/accountSetting/RangeSelector';
 
 const Account = ({ navigation }) => {
   const { user } = useAuth();
@@ -25,6 +26,8 @@ const Account = ({ navigation }) => {
   const [imageUrls, setImageUrls] = useState([]); 
   const [isFetching, setIsFetching] = useState(false);
   const [selectedLanguages, setSelectedLanguages] = useState([]);
+  
+  
   console.log(imageUrls);
 
   useEffect(() => {
@@ -209,7 +212,7 @@ const Account = ({ navigation }) => {
           ListFooterComponent={() => (
             <View>
               <Text style={styles.title}>Account Settings</Text>
-              <ProfileDescription />
+              <ProfileDescription userId={user.uid}/>
               {/* <TouchableOpacity onPress={() => navigation.navigate("Language")}>
                 <View style={styles.setting}>
                   </View>
@@ -218,7 +221,10 @@ const Account = ({ navigation }) => {
                   <LanguageSelector
                   selectedLanguages={selectedLanguages}
                   setSelectedLanguages={setSelectedLanguages}
+                  userId={user.uid}
               />
+                  {/* Передаём handleRangeChange как проп */}
+                  <RangeSelector userId={user.uid}/>
                 
            
               <View style={styles.setting}>
