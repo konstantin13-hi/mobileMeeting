@@ -20,139 +20,54 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { db, timestamp } from "../firebase";
 
-const AuthContext = createContext({
+// Создание контекста
+const AuthContext = createContext();
 
-
-})
-
-export const AuthProvider = ({children}) => {
-  const navigation = useNavigation();
-   const[user,setUser] = useState(null);
-   const [loading, setLoading] = useState(false);
-   const [loadingInitial, setLoadingInitial] = useState(true);
-    const [isProfileComplete, setIsProfileComplete] = useState(false);
-    console.log("user_id= "+ user?.uid);
-
-    // useEffect(() => {
-    //   if (user && !loadingInitial && navigation.isReady()) { 
-    //     const checkUserProfile = async () => {
-    //       try {
-    //         const snapShot = await getDoc(doc(db, "users", user.uid));
-    //         if (!snapShot.exists()) {
-    //           navigation.navigate("FirstName");
-    //         } else {
-    //           setIsProfileComplete(true);
-    //         }
-    //       } catch (error) {
-    //         console.error("Error checking user profile:", error);
-    //       }
-    //     };
-    
-    //     checkUserProfile();
-    //   }
-    // }, [user, loadingInitial, navigation]);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingInitial, setLoadingInitial] = useState(true);
+  const [isProfileComplete, setIsProfileComplete] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user);
-        const snapShot = await getDoc(doc(db, "users", user.uid));
+        const snapShot = await getDoc(doc(db, 'users', user.uid));
         if (!snapShot.exists()) {
-          navigation.navigate("FirstName");
+          setIsProfileComplete(false); // Если профиль не завершен
         } else {
-          setIsProfileComplete(true);
+          setIsProfileComplete(true); // Если профиль завершен
         }
       } else {
         setUser(null);
+        setIsProfileComplete(false);
       }
       setLoadingInitial(false);
-      setLoading(false);
     });
 
     return unsubscribe;
-  }, []);
-//   useEffect(() => {
-//     const unsubscribe = onAuthStateChanged(auth, (user) => {
-//         setLoadingInitial(true); // Начинаем загрузку
-//         if (user) {
-//             setUser(user);
-//         } else {
-//             setUser(null);
-//             setIsProfileComplete(false); // Сбрасываем состояние профиля
-//         }
-//         setLoadingInitial(false); // Завершаем начальную загрузку
-//     });
-
-//     return unsubscribe;
-// }, []);
-
-// useEffect(() => {
-//     if (user && navigation.isReady()) {
-//         const checkUserProfile = async () => {
-//             try {
-//                 setLoading(true);
-//                 const snapShot = await getDoc(doc(db, "users", user.uid));
-//                 if (!snapShot.exists()) {
-//                     navigation.navigate("FirstName"); // Перенаправляем на FirstName
-//                 } else {
-//                     setIsProfileComplete(true);
-//                 }
-//             } catch (error) {
-//                 console.error("Error checking user profile:", error);
-//             } finally {
-//                 setLoading(false); // Отключаем индикатор загрузки
-//             }
-//         };
-
-//         checkUserProfile();
-//     }
-// }, [user, navigation.isReady()]);
-
-  // const updateUser = async (newUser) => {
-  //   try {
-  //     setUser(newUser);
-  //     await AsyncStorage.setItem('user', JSON.stringify(newUser));
-  //   } catch (error) {
-  //     console.error('Error updating user in AsyncStorage:', error);
-  //   }
-  // };
-
-  // const createUserInStorage = async (user) => {
-  //   try {
-  //       console.log("createUserInStorage= "+user)
-  //     await AsyncStorage.setItem('user', JSON.stringify(user));
-  //     setUser(user);
-  //   } catch (error) {
-  //     console.error('Error creating user in AsyncStorage:', error);
-  //   }
-  // };
+  }, []); // Пустой массив, чтобы эффекты сработали один раз при монтировании
 
   const logout = async () => {
     try {
-      // Выполняем выход пользователя из Firebase
       await signOut(auth);
-      
-      // Удаляем пользователя из состояния приложения
       setUser(null);
-      
+      setIsProfileComplete(false);
     } catch (error) {
       console.error('Error logging out:', error);
     }
   };
 
-
-
-   return (<AuthContext.Provider value={{logout,user,setUser,loading,setLoading,loadingInitial, setLoadingInitial,isProfileComplete,setIsProfileComplete}}>
-    {children}
-
-   </AuthContext.Provider>)
-
-
+  return (
+    <AuthContext.Provider value={{ logout, user, setUser, loading, setLoading, loadingInitial, setLoadingInitial, isProfileComplete, setIsProfileComplete }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
-export default function useHookAuth(){
-    return useContext(AuthContext);
+// Хук для доступа к контексту
+export default function useHookAuth() {
+  return useContext(AuthContext);
 }
-
-
 

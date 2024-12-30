@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Alert, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import ProgressBar from '../../components/ProgressBar';
 import { uploadMultiplePhotos, saveUserProfile } from '../../services/userService';
 import useHookAuth from '../../hooks/useAuth';
 import { useProfile } from '../../hooks/ProfileContext';
-import { ActivityIndicator } from 'react-native';
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons } from '@expo/vector-icons';
 import * as ImageManipulator from 'expo-image-manipulator';
 
 const PhotoScreen = ({ navigation }) => {
+  const { width } = Dimensions.get('window');
   const [photos, setPhotos] = useState([]);
   const { user, isProfileComplete, setIsProfileComplete } = useHookAuth();
   const [loading, setLoading] = useState(false);
@@ -37,7 +37,6 @@ const PhotoScreen = ({ navigation }) => {
       for (const asset of result.assets) {
         try {
           if (asset.width > maxWidth || asset.height > maxHeight) {
-            console.log(`Resizing photo: ${asset.uri}`);
             const manipResult = await ImageManipulator.manipulateAsync(
               asset.uri,
               [{ resize: { width: maxWidth, height: maxHeight } }],
@@ -45,7 +44,6 @@ const PhotoScreen = ({ navigation }) => {
             );
             compressedPhotos.push(manipResult.uri);
           } else {
-            console.log(`Photo ${asset.uri} fits size requirements.`);
             compressedPhotos.push(asset.uri);
           }
         } catch (error) {
@@ -54,43 +52,30 @@ const PhotoScreen = ({ navigation }) => {
         }
       }
 
-      if (compressedPhotos.length === 0) {
-        Alert.alert("No Photos", "No valid photos could be added.");
-        return;
-      }
-
-       // Ограничиваем массив до первых шести фотографий
-    setPhotos((prev) => [...prev, ...compressedPhotos].slice(0, 6));
-      console.log("Compressed Photos:", compressedPhotos);
+      setPhotos((prev) => [...prev, ...compressedPhotos].slice(0, 6));
     }
   };
 
   const handleNext = async () => {
-    if (photos.length < 1) {
-      Alert.alert("Insufficient Photos", "Please upload at least 1 photo.");
+    if (photos.length < 3) {
+      Alert.alert("Insufficient Photos", "Please upload at least 3 photos.");
       return;
     }
-  
+
     setLoading(true);
-  
+
     try {
-      // Загружаем фото и получаем их URL
       const uploadedPhotoUrls = await uploadMultiplePhotos(user.uid, photos);
-  
-      // Сохраняем их в Firestore в единственное поле photos
+
       const updatedProfile = {
         ...profile,
         photos: uploadedPhotoUrls,
       };
-  
+
       await saveUserProfile(user.uid, updatedProfile);
-  
-      // Обновляем локальное состояние
       setPhotos(uploadedPhotoUrls);
-  
-      console.log("User profile updated successfully!");
-      Alert.alert("Profile Updated", "Your profile has been successfully updated!");
       setIsProfileComplete(true);
+      Alert.alert("Profile Updated", "Your profile has been successfully updated!");
     } catch (error) {
       console.error("Error saving user profile:", error);
       Alert.alert("Error", "An error occurred while saving your profile.");
@@ -105,44 +90,46 @@ const PhotoScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ProgressBar step={5} totalSteps={5} />
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Ionicons name="chevron-back-outline" size={34} color="#FF5864" />
-      </TouchableOpacity>
-      <Text style={styles.headerText}>Upload at least 3 photos</Text>
+      <View style={styles.content}>
+        <ProgressBar step={5} totalSteps={5} />
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="chevron-back-outline" size={34} color="#ffc107" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Upload at least 3 photos</Text>
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#007BFF" style={{ marginVertical: 20 }} />
-      ) : (
-        <>
-          <View style={styles.photosContainer}>
-            {photos.map((uri, index) => (
-              <View key={index} style={styles.photoWrapper}>
-              <Image source={{ uri }} style={styles.photo} />
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => removePhoto(index)}
-              >
-                <Text style={styles.deleteButtonText}>×</Text>
-              </TouchableOpacity>
+        {loading ? (
+          <ActivityIndicator size="large" color="#ffc107" style={styles.loader} />
+        ) : (
+          <>
+            <View style={styles.photosContainer}>
+              {photos.map((uri, index) => (
+                <View key={index} style={styles.photoWrapper}>
+                  <Image source={{ uri }} style={styles.photo} />
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => removePhoto(index)}
+                  >
+                    <Ionicons name="close-circle" size={24} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+              {photos.length < 6 && (
+                <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
+                  <Ionicons name="add" size={40} color="#1b263b" />
+                </TouchableOpacity>
+              )}
             </View>
-          ))}
-          {photos.length < 6 && (
-            <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
-              <Text style={styles.addPhotoText}>+</Text>
-            </TouchableOpacity>
-          )}
-        </View>
 
-          <TouchableOpacity
-            style={[styles.nextButton, photos.length < 3 && { backgroundColor: '#ccc' }]}
-            onPress={handleNext}
-            disabled={photos.length < 3 || loading}
-          >
-            <Text style={styles.nextButtonText}>Next</Text>
-          </TouchableOpacity>
-        </>
-      )}
+            <TouchableOpacity
+              style={[styles.continueButton, photos.length < 3 && styles.disabledContinueButton]}
+              onPress={handleNext}
+              disabled={photos.length < 3 || loading}
+            >
+              <Text style={styles.buttonText}>Next</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
     </SafeAreaView>
   );
 };
@@ -150,14 +137,23 @@ const PhotoScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#1b263b',
   },
-  headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 40,
+  },
+  backButton: {
     marginBottom: 20,
+    padding: 10,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '600',
+    color: '#fff',
     textAlign: 'center',
+    marginBottom: 20,
   },
   photosContainer: {
     flexDirection: 'row',
@@ -168,52 +164,75 @@ const styles = StyleSheet.create({
   photoWrapper: {
     position: 'relative',
     margin: 10,
+    borderRadius: 10,
+    backgroundColor: '#1b263b', // Фон контейнера для тени
+    shadowColor: '#ffc107', // Желтая тень
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 10, // Для Android
   },
   photo: {
     width: 100,
     height: 100,
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
   deleteButton: {
     position: 'absolute',
-    bottom: -5,
+    top: -5,
     right: -5,
-    backgroundColor: 'rgba(255, 0, 0, 0.8)',
+    backgroundColor: '#ff5864',
     borderRadius: 50,
     width: 24,
     height: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  deleteButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-    lineHeight: 16,
-  },
   addPhotoButton: {
     width: 100,
     height: 100,
     borderRadius: 10,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#e9ecef',
     justifyContent: 'center',
     alignItems: 'center',
     margin: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    shadowColor: '#ffc107', // Тень для кнопки добавления
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 10,
   },
-  addPhotoText: {
-    fontSize: 30,
-    color: '#888',
+  loader: {
+    marginVertical: 20,
   },
-  nextButton: {
-    backgroundColor: '#007BFF',
-    padding: 15,
-    borderRadius: 8,
+  continueButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: (Dimensions.get('window').width - 200) / 2,
+    height: 50,
+    width: 200,
+    borderRadius: 25,
+    backgroundColor: '#ffc107',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  nextButtonText: {
-    color: '#fff',
+  disabledContinueButton: {
+    backgroundColor: '#ccc',
+  },
+  buttonText: {
+    color: '#1b263b',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
 });
 
