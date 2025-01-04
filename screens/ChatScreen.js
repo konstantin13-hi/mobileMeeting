@@ -4,24 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Header from '../components/Header'
 import ChatList from '../components/ChatLIst'
 
-const ChatScreen =({navigation})=> {
+const ChatScreen = () => {
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#1b263b' }}>
+      <Header title="Chat" />
+      <ChatList />
+    </SafeAreaView>
+  );
+};
 
-    return (
-   
-
-   <SafeAreaView>
-
-
- 
-    
-        <Header title={"Chat"}/>
-        <ChatList />
-      
-      </SafeAreaView>
-
-    
-    )
-  
-}
-
-export default ChatScreen
+export default ChatScreen;

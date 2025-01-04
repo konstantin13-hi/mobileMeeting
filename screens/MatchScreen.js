@@ -1,98 +1,154 @@
-
-import React, { Component } from 'react'
-
+import React from 'react';
 import {
-  Animated,
   View,
   Text,
-  Pressable,
-  Button,
-  StyleSheet,Dimensions
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Dimensions,
 } from 'react-native';
-import { useRoute, useTheme } from '@react-navigation/native';
-import { useCardAnimation } from '@react-navigation/stack';
+import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TouchableOpacity } from 'react-native'
-import FallingHeart from './FallingHeart';
-import { Image } from 'react-native'
 
-const MatchScreen =({navigation})=> {
+const MatchScreen = ({ navigation }) => {
   const route = useRoute();
-  const {loggedInProfile,userSwiped} = route.params;
-  const img1 = userSwiped.photoURL;
-  const img2 = loggedInProfile.photoURL;
-  const name = "Name";
-  const { width, height } = Dimensions.get('window');
-  const hearts = Array.from({ length: 10 }).map((_, index) => ({
-      id: index,
-      size: Math.random() * 40 + 10,
-      duration: Math.random() * 3000 + 2000,
-      startX: Math.random() * width,
-      endY: height,
-    }));
-  
-
-  const rotation = new Animated.Value(0);
-  
-
+  const { loggedInProfile, userSwiped } = route.params;
+  const img1 = userSwiped.photos[0]; // Right Image
+  const img2 = loggedInProfile.photos[0]; // Left Image
+  const name = userSwiped.name || 'User';
 
   return (
-    <View className="h-full bg-cyan-800">
+    <View style={styles.container}>
       <SafeAreaView>
-      {hearts.map(heart => (
-          <FallingHeart key={heart.id} size={heart.size} duration={heart.duration} startX={heart.startX} endY={heart.endY} />
-        ))}
-       
-          <Text className="text-white text-center pt-20 text-3xl"> Congratulations </Text>
-      <Text className="text-gray-300 font-bold text-center pt-5"> Mutual sympathy. Do not waste time and write to her </Text>
+        {/* Title Section */}
+        <Text style={styles.title}>Congratulations</Text>
+        <Text style={styles.subtitle}>
+          Mutual sympathy. Do not waste time and write to her
+        </Text>
 
-
-      <View className=" h-2/4 relative">
-          <View className="absolute right-10 top-10 rounded-2xl bg-black h-72 w-48 rotate-12 z-10 ">
-              <Image source={{uri: img1}} className="object-cover h-full w-full rounded-2xl border-2 border-yellow-600"/>
+        {/* Image Section */}
+        <View style={styles.imageContainer}>
+          {/* Left Image */}
+          <View style={[styles.shadowWrapper, styles.leftImage]}>
+            <Image source={{ uri: img2 }} style={styles.image} resizeMode="cover" />
           </View>
-          <View className="absolute left-8 top-20 rounded-2xl bg-black h-60 w-40 -rotate-12 ">
-              <Image source={{uri: img2}} className="object-cover h-full w-full rounded-2xl"/>
+          {/* Right Image */}
+          <View style={[styles.shadowWrapper, styles.rightImage, styles.imageWithBorder]}>
+            <Image source={{ uri: img1 }} style={styles.image} resizeMode="cover" />
           </View>
-          
-      </View>
+        </View>
 
-        
-       <View className="flex items-center pt-10">
-
-       <TouchableOpacity
-       className="bg-yellow-600 h-10 rounded-full w-2/3 justify-center items-center"
-       onPress={() => {
-        navigation.goBack();
-        navigation.navigate("Chat");
-      }} >  
-      <Text className="text-black  flex "> Write to {name}</Text>
-      </TouchableOpacity>
-       </View>
-
-       <View className="flex items-center p-5">
-
+        {/* Button Section */}
+        <View style={styles.buttonContainer}>
           <TouchableOpacity
-          className="justify-center items-center"
-          onPress={() => {
-           
-            navigation.navigate("Home");
-          }} >  
-      <Text className="text-white  flex "> Back to search</Text>
-      </TouchableOpacity>
-          </View>
+            style={styles.primaryButton}
+            onPress={() => {
+              navigation.goBack();
+              navigation.navigate('Chat');
+            }}
+          >
+            <Text style={styles.primaryButtonText}>Write to {name}</Text>
+          </TouchableOpacity>
+        </View>
 
-
+        {/* Link Section */}
+        <View style={styles.linkContainer}>
+          <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+            <Text style={styles.linkText}>Back to search</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
-
-
-      
-    
     </View>
-  )
+  );
+};
 
- 
+const { width } = Dimensions.get('window');
 
-}
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#1b263b', // Dark blue background
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '600',
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  subtitle: {
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#ccc',
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 30,
+  },
+  imageContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 200,
+    marginBottom: 30,
+  },
+  shadowWrapper: {
+    width: 140,
+    height: 180,
+    borderRadius: 20,
+    backgroundColor: '#1b263b', // Фон контейнера для тени
+    shadowColor: '#ffc107', // Желтая тень
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 10, // Для Android
+  },
+  rightImage: {
+    transform: [{ rotate: '25deg' }],
+    right: 20,
+    borderWidth: 2,
+    borderColor: '#ffc107', // Golden yellow border for the right image
+  },
+  leftImage: {
+    transform: [{ rotate: '-25deg' }],
+    left: 20,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
+  },
+  buttonContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  primaryButton: {
+    backgroundColor: '#ffc107', // Golden yellow color
+    borderRadius: 25,
+    height: 50,
+    width: width * 0.8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryButtonText: {
+    color: '#1b263b', // Dark blue text
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  linkContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  linkText: {
+    color: '#fff',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+  },
+});
 
-export default MatchScreen
+export default MatchScreen;

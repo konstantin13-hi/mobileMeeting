@@ -55,58 +55,96 @@ function HomeScreen({ navigation }) {
     );
   };
 
+  // useEffect(() => {
+  //   let unsub;
+
+  //   const fetchCards = async () => {
+
+  //     const passes = await getDocs(
+  //       collection(db, "users", user.uid, "passes")
+  //     ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
+
+  //     // console.log(passes);
+
+  //     const swipes = await getDocs(
+  //       collection(db, "users", user.uid, "swipes")
+  //     ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
+
+  //     const passedUserIds = passes.length > 0 ? passes : ["temp"];
+  //     const swipedUserIds = swipes.length > 0 ? swipes : ["temp"];
+
+  //     unsub = onSnapshot(
+  //       query(
+  //         collection(db, "users"),
+  //         where("id", "not-in", [...passedUserIds, ...swipedUserIds])
+  //       ),
+  //       (snapShot) => {
+  //         setProfiles(
+  //           snapShot.docs
+  //             .filter((doc) => doc.id !== user.uid)
+  //             .map((doc) => ({
+  //               id: doc.id,
+  //               ...doc.data(),
+  //             }))
+  //         );
+  //       }
+  //     );
+
+  //   };
+
+  //   fetchCards();
+
+  //   return unsub;
+  // }, []);
   useEffect(() => {
     let unsub;
-
+  
     const fetchCards = async () => {
-
-      const passes = await getDocs(
-        collection(db, "users", user.uid, "passes")
-      ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
-
-      // console.log(passes);
-
-      const swipes = await getDocs(
-        collection(db, "users", user.uid, "swipes")
-      ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
-
-      const passedUserIds = passes.length > 0 ? passes : ["temp"];
-      const swipedUserIds = swipes.length > 0 ? swipes : ["temp"];
-
-      unsub = onSnapshot(
-        query(
-          collection(db, "users"),
-          where("id", "not-in", [...passedUserIds, ...swipedUserIds])
-        ),
-        (snapShot) => {
-          setProfiles(
-            snapShot.docs
-              .filter((doc) => doc.id !== user.uid)
-              .map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-              }))
-          );
-        }
-      );
-
+      try {
+        // Fetch swiped and passed users
+        const passes = await getDocs(
+          collection(db, "users", user.uid, "passes")
+        ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
+  
+        const swipes = await getDocs(
+          collection(db, "users", user.uid, "swipes")
+        ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
+  
+        // Combine passed and swiped users
+        const excludedIds = [...passes, ...swipes, user.uid]; // Exclude the current user as well
+  
+        unsub = onSnapshot(collection(db, "users"), (snapshot) => {
+          const fetchedProfiles = snapshot.docs
+            .filter((doc) => !excludedIds.includes(doc.id)) // Exclude users by their ID
+            .map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+  
+          setProfiles(fetchedProfiles);
+          console.log("Filtered Profiles: ", fetchedProfiles);
+        });
+      } catch (error) {
+        console.error("Error fetching cards:", error);
+      }
     };
-
+  
     fetchCards();
-
+  
     return unsub;
   }, []);
+  console.log(profiles)
 
   const [viewedCards, setViewedCards] = useState([]); // Список просмотренных карточек
 
-  const swipeLeft = (cardIndex) => {
-    if (!profiles[cardIndex]) {
-      return;
-    }
+    const swipeLeft = (cardIndex) => {
+      if (!profiles[cardIndex]) {
+        return;
+      }
 
-    const userSwiped = profiles[cardIndex];
-    setDoc(doc(db, "users", user.uid, "passes", userSwiped.id), userSwiped);
-  };
+      const userSwiped = profiles[cardIndex];
+      setDoc(doc(db, "users", user.uid, "passes", userSwiped.id), userSwiped);
+    };
 
   // const renderCard = (card, index) => {
   //   return (
@@ -121,41 +159,59 @@ function HomeScreen({ navigation }) {
   // };
 
   const renderCard = (card, index) => {
-    
+    const firstPhoto = card.photos && card.photos.length > 0 ? card.photos[0] : null;
+  
     return (
-      <View className="h-2/3 border bg-white rounded-xl -mt-10">
+      <View key={index} className="h-2/3 border bg-white rounded-xl -mt-10">
         <View className="bg-black h-4/5 rounded-t-xl relative">
-          <Animated.Image source={{ uri: card?.photoURL }} className="object-cover h-full w-full rounded-t-xl" 
+          {firstPhoto ? (
+            <Animated.Image
+              source={{ uri: firstPhoto }}
+              className="object-cover h-full w-full rounded-t-xl"
               sharedTransitionTag="tag"
-          />
+            />
+          ) : (
+            <View className="bg-gray-300 h-full w-full rounded-t-xl flex items-center justify-center">
+              <Text className="text-gray-500">No Photo Available</Text>
+            </View>
+          )}
           <Button
-        title="Go to UserProfile"
-        onPress={() => navigation.navigate('UserProfile',{card})}
-      />
-   
-             </View>
-        <Text>{card?.displayName}</Text>
+            title="Go to UserProfile"
+            onPress={() => navigation.navigate('UserProfile', { card })}
+          />
+        </View>
+        <Text>{card?.displayName || "No Name"}</Text>
       </View>
     );
   };
-  const renderButtons =()=>{
-    return(
-    <View className="flex-row justify-between ml-20 mr-20">
-        
-          <TouchableOpacity className="relative">
-           <View className="absolute bg-white h-12 w-10 rounded-full inset-0 top-2 left-2">
-           </View>
-           <CancelIcon size={66} color={"grey"} className="overflow-hidden">   </CancelIcon>
-          </TouchableOpacity>
-          <TouchableOpacity className="relative">
-          <View className="absolute bg-white h-12 w-10 rounded-full inset-0 top-2 left-2">
-           </View>
-            <HeartIcon size={64}/>
-          </TouchableOpacity>
-       </View>
-   
-    )
-  }
+  const renderButtons = () => {
+    const handleSwipeLeft = () => {
+      if (profiles.length > 0) {
+        swipeLeft(0); // Always swipe the first card in the array
+        swipeRef.current.swipeLeft(); // Trigger the swiper's left swipe animation
+      }
+    };
+  
+    const handleSwipeRight = () => {
+      if (profiles.length > 0) {
+        swipeRight(0); // Always swipe the first card in the array
+        swipeRef.current.swipeRight(); // Trigger the swiper's right swipe animation
+      }
+    };
+  
+    return (
+      <View className="flex-row justify-between ml-20 mr-20">
+        <TouchableOpacity className="relative" onPress={handleSwipeLeft}>
+          <View className="absolute bg-white h-12 w-10 rounded-full inset-0 top-2 left-2"></View>
+          <CancelIcon size={66} color={"grey"} className="overflow-hidden" />
+        </TouchableOpacity>
+        <TouchableOpacity className="relative" onPress={handleSwipeRight}>
+          <View className="absolute bg-white h-12 w-10 rounded-full inset-0 top-2 left-2"></View>
+          <HeartIcon size={64} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
   
   const swipeRight = async (cardIndex) => {
     try {
@@ -344,9 +400,8 @@ function HomeScreen({ navigation }) {
               </View>
               <HeartIcon size={80}></HeartIcon>
               </View>, /* Optional */
-          
+
                 style: {
-                
                   wrapper: {
                     height:483,
                     backgroundColor: "rgba(181, 154, 101, 0.5)",
@@ -356,71 +411,21 @@ function HomeScreen({ navigation }) {
                     marginTop:-40,
                     borderWidth:5,
                     borderColor:'rgb(181, 154, 101)',
-                    
-                    
-                    
                   }
                 }
-
             }
-            
-
-         
         }}
-        swipeBackCard
-        
+        swipeBackCard 
      />
-      
-     
-     
     </View>
 
      <View>
        {renderButtons()}
       </View>
-
-    </View>
-    
+    </View> 
   )}
-
-    
-
-     
-
-
-
-    
-
     </SafeAreaView>
    
   );
 }
-
-
-
 export default HomeScreen
-// style={{backgroundColor:"pink", borderWidth: 1, borderColor: 'black', width: 50, height: 50}}
-
-
-{/* <View style={styles.container}>
-<Swiper
-    cards={['DO', 'MORE', 'OF', 'WHAT', 'MAKES', 'YOU', 'HAPPY']}
-    renderCard={(card) => {
-        return (
-            <View style={styles.card}>
-                <Text style={styles.text}>{card}</Text>
-            </View>
-        )
-    }}
-    onSwiped={(cardIndex) => {console.log(cardIndex)}}
-    onSwipedAll={() => {console.log('onSwipedAll')}}
-    cardIndex={0}
-    backgroundColor={'#ffffff'}
-    stackSize= {3}>
-    <Button
-        onPress={() => {console.log('oulala')}}
-        title="Press me">
-        You can press me
-    </Button>
-</Swiper>
-</View> */}
