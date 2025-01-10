@@ -3,8 +3,10 @@ import { View, Text, StyleSheet } from "react-native";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
 import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase";
+import useHookAuth from "../../hooks/useAuth";
 
 const RangeSelector = ({ userId }) => {
+  const {user,setUser} = useHookAuth();
   const [distance, setDistance] = useState(50); // По умолчанию 50 км
   const [ageRange, setAgeRange] = useState([18, 35]); // Диапазон возраста от 18 до 35
   const [loading, setLoading] = useState(true); // Состояние загрузки
@@ -43,6 +45,11 @@ const RangeSelector = ({ userId }) => {
       try {
         const userDocRef = doc(db, "users", userId);
         await updateDoc(userDocRef, { distance, ageRange });
+        setUser((prevUser) => ({
+          ...prevUser,
+          distance,
+          ageRange,
+        }));
         console.log("Preferences updated successfully:", { distance, ageRange });
       } catch (error) {
         console.error("Error updating preferences in Firestore:", error);

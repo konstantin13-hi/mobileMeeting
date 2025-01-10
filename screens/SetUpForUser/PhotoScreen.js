@@ -74,6 +74,7 @@ const PhotoScreen = ({ navigation }) => {
 
       await saveUserProfile(user.uid, updatedProfile);
       setPhotos(uploadedPhotoUrls);
+      setProfile(updatedProfile);
       setIsProfileComplete(true);
       Alert.alert("Profile Updated", "Your profile has been successfully updated!");
     } catch (error) {

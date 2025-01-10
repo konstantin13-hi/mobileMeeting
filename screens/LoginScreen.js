@@ -14,8 +14,11 @@ import {
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../firebase";
 import { Ionicons } from "@expo/vector-icons"; // Для иконки "глаз"
+import useHookAuth from "../hooks/useAuth";
+import { doc, setDoc } from "firebase/firestore"; 
 
 export default function LoginScreen() {
+  const {isProfileSignUp,setIsProfileSingUp} = useHookAuth();
   const [type, setType] = useState(1); // 1 = Sign in, 2 = Sign up
   const [name, setName] = useState("");
   const [mail, setMail] = useState("");
@@ -31,7 +34,7 @@ export default function LoginScreen() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, mail, password);
       await updateProfile(userCredential.user, { displayName: name });
-      Alert.alert("Success", "Registration complete! You can now log in.");
+      Alert.alert("Success", "Registration complete!");
       setType(1); // Переключение на вход
     } catch (error) {
       Alert.alert("Error", error.message);
@@ -47,6 +50,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, mail, password);
+     
       Alert.alert("Success", "You are now logged in!");
     } catch (error) {
       Alert.alert("Error", error.message);

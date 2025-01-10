@@ -11,6 +11,8 @@ import{ChatIcon} from '../icons/ChatIcon';
 import { useState } from 'react';
 import { useRef } from 'react';
 import { ActivityIndicator } from 'react-native';
+import { filterProfiles } from '../lib/filterProfiles';
+
 import {
   collection,
   doc,
@@ -55,84 +57,65 @@ function HomeScreen({ navigation }) {
     );
   };
 
-  // useEffect(() => {
-  //   let unsub;
-
-  //   const fetchCards = async () => {
-
-  //     const passes = await getDocs(
-  //       collection(db, "users", user.uid, "passes")
-  //     ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
-
-  //     // console.log(passes);
-
-  //     const swipes = await getDocs(
-  //       collection(db, "users", user.uid, "swipes")
-  //     ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
-
-  //     const passedUserIds = passes.length > 0 ? passes : ["temp"];
-  //     const swipedUserIds = swipes.length > 0 ? swipes : ["temp"];
-
-  //     unsub = onSnapshot(
-  //       query(
-  //         collection(db, "users"),
-  //         where("id", "not-in", [...passedUserIds, ...swipedUserIds])
-  //       ),
-  //       (snapShot) => {
-  //         setProfiles(
-  //           snapShot.docs
-  //             .filter((doc) => doc.id !== user.uid)
-  //             .map((doc) => ({
-  //               id: doc.id,
-  //               ...doc.data(),
-  //             }))
-  //         );
-  //       }
-  //     );
-
-  //   };
-
-  //   fetchCards();
-
-  //   return unsub;
-  // }, []);
   useEffect(() => {
     let unsub;
   
     const fetchCards = async () => {
       try {
-        // Fetch swiped and passed users
+        // Получаем passes
         const passes = await getDocs(
           collection(db, "users", user.uid, "passes")
         ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
   
+        // Получаем swipes
         const swipes = await getDocs(
           collection(db, "users", user.uid, "swipes")
         ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
   
-        // Combine passed and swiped users
-        const excludedIds = [...passes, ...swipes, user.uid]; // Exclude the current user as well
+        const excludedIds = [...passes, ...swipes, user.uid];
   
+        // Получаем данные текущего пользователя
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+  
+        if (!userDocSnap.exists()) {
+          console.error("User document not found in Firestore");
+          return;
+        }
+  
+        const userMain = userDocSnap.data();
+  
+        // Слушаем изменения коллекции users
         unsub = onSnapshot(collection(db, "users"), (snapshot) => {
-          const fetchedProfiles = snapshot.docs
-            .filter((doc) => !excludedIds.includes(doc.id)) // Exclude users by their ID
+          const allProfiles = snapshot.docs
+            .filter((doc) => !excludedIds.includes(doc.id))
             .map((doc) => ({
               id: doc.id,
               ...doc.data(),
             }));
   
-          setProfiles(fetchedProfiles);
-          console.log("Filtered Profiles: ", fetchedProfiles);
+
+          console.log("USERMain===="+JSON.stringify(userMain, null, 2))
+          // Фильтруем профили
+          const filteredProfiles = filterProfiles(allProfiles, userMain);
+          setProfiles(filteredProfiles);
+          console.log("Filtered Profiles: ", filteredProfiles);
         });
       } catch (error) {
         console.error("Error fetching cards:", error);
       }
     };
   
-    fetchCards();
+    if (user) {
+      fetchCards();
+    }
   
-    return unsub;
-  }, []);
+    return () => {
+      if (unsub) {
+        unsub();
+      }
+    };
+  }, [user?.ageRange, user?.distance]);
   console.log(profiles)
 
   const [viewedCards, setViewedCards] = useState([]); // Список просмотренных карточек
@@ -146,20 +129,8 @@ function HomeScreen({ navigation }) {
       setDoc(doc(db, "users", user.uid, "passes", userSwiped.id), userSwiped);
     };
 
-  // const renderCard = (card, index) => {
-  //   return (
-  //     <View className="h-2/3 border bg-white rounded-xl mt-10">
-  //       <View className="bg-black h-4/5 rounded-t-xl">
-  //       <Image source={{ uri: card?.photoURL }}  className="object-cover h-full w-full rounded-t-xl" />
-  //       </View>
-     
-  //       <Text>{card?.displayName}</Text>
-  //     </View>
-  //   );
-  // };
-
   const renderCard = (card, index) => {
-    const firstPhoto = card.photos && card.photos.length > 0 ? card.photos[0] : null;
+    const firstPhoto = card?.photos && card?.photos.length > 0 ? card.photos[0] : null;
   
     return (
       <View key={index} className="h-2/3 border bg-white rounded-xl -mt-10">
@@ -180,7 +151,6 @@ function HomeScreen({ navigation }) {
             onPress={() => navigation.navigate('UserProfile', { card })}
           />
         </View>
-        <Text>{card?.displayName || "No Name"}</Text>
       </View>
     );
   };
@@ -271,8 +241,8 @@ function HomeScreen({ navigation }) {
         <TouchableOpacity>
           <MaterialIcons name="account-circle" size={40} color="white" onPress={() => navigation.navigate('Account')} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={()=> navigation.navigate('Modal')}> 
-
+        {/* <TouchableOpacity onPress={()=> navigation.navigate('Modal')}>  */}
+        <TouchableOpacity > 
         <View style={{ height: 60, width: 60 }}>
           <Image source={require('../img/kisspng.png')} style={{ flex: 1, width: null, height: null, resizeMode: 'cover', borderRadius: 8 }} />
         </View>

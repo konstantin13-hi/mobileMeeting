@@ -8,13 +8,16 @@ import Plus from '../components/Plus';
 import {pickImage} from '../lib/imagePicker'
 import { db, timestamp ,storage} from "../firebase";
 import useAuth from "../hooks/useAuth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, deleteDoc, getDocs, query, collection, where } from "firebase/firestore";
 import ProfileDescription from '../components/accountSetting/ProfileDescription';
 import {deleteUserPhoto ,replaceUserPhoto,uploadUserPhoto ,uploadUserOnePhoto} from '../services/userService';
 import LanguageSelector from '../components/accountSetting/LanguageSelector';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import RangeSelector from '../components/accountSetting/RangeSelector';
+import { deleteUser } from "firebase/auth";
+import { auth } from "../firebase";
+import { Alert } from 'react-native';
 
 const Account = ({ navigation }) => {
   const { user } = useAuth();
@@ -112,6 +115,49 @@ const Account = ({ navigation }) => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    try {
+      if (!user) {
+        Alert.alert("Error", "User is not logged in.");
+        return;
+      }
+  
+       // Удалить фотографии из Storage
+       if (imageUrls.length > 0) {
+        for (const photo of imageUrls) {
+          await deleteUserPhoto(user.uid, photo); // Удаляем каждую фотографию
+        }
+      }
+  
+      // Удалить данные пользователя из Firestore
+      const userDocRef = doc(db, "users", user.uid);
+      await deleteDoc(userDocRef);
+  
+      // Удалить все записи из matches
+      const matchesQuery = query(
+        collection(db, "matches"),
+        where("usersMatched", "array-contains", user.uid)
+      );
+  
+      const matchesSnapshot = await getDocs(matchesQuery);
+      for (const match of matchesSnapshot.docs) {
+        await deleteDoc(match.ref);
+      }
+  
+      // Удалить аккаунт из Firebase Auth
+      if (auth.currentUser) {
+        await deleteUser(auth.currentUser);
+      } else {
+        throw new Error("No authenticated user found.");
+      }
+  
+      Alert.alert("Account Deleted", "Your account has been successfully deleted.");
+      navigation.navigate("Login"); // Перенаправить на экран входа
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      Alert.alert("Error", "An error occurred while deleting your account.");
+    }
+  };
   
   const handleReplaceImage = async () => {
     if (!selectedImageUri) return;
@@ -236,7 +282,7 @@ const Account = ({ navigation }) => {
                   <Text>Log out</Text>
                 </View>
               </TouchableOpacity>
-              <Button title="Delete Account" onPress={() => {}} />
+              <Button title="Delete Account" onPress={handleDeleteAccount} />
             </View>
           )}
         />

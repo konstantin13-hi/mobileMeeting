@@ -24,7 +24,7 @@ import ProfileSetupStack from './ProfileSetupStack';
 const Stack = createNativeStackNavigator();
 
 function StackNavigator() {
-  const { user, isProfileComplete ,loadingInitial} = useHookAuth();
+  const { user, isProfileComplete ,loadingInitial,isProfileSignUp,setIsProfileSingUp} = useHookAuth();
   // const { permissionType, setPermissionType, location } = useLocationPermission();
   // console.log(user);
   const [isLoading, setIsLoading] = useState(true);
