@@ -18,31 +18,23 @@ import { Ionicons } from '@expo/vector-icons';
 const BirthdayScreen = ({ navigation }) => {
   const { width } = Dimensions.get('window');
   const { profile, setProfile } = useProfile();
-  const [birthdate, setBirthdate] = useState(profile.birthDate || new Date());
+  const [birthdate, setBirthdate] = useState(null); // Изначально нет даты
+  const [tempDate, setTempDate] = useState(null); // Для временного хранения даты из пикера
   const [showPicker, setShowPicker] = useState(false);
 
   const today = new Date();
-  const minimumDate = new Date(
-    today.getFullYear() - 100, // Allow up to 100 years old
-    today.getMonth(),
-    today.getDate()
-  );
-  const maximumDate = new Date(
-    today.getFullYear() - 18, // Minimum age 18 years
-    today.getMonth(),
-    today.getDate()
-  );
+  const minimumDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
+  const maximumDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
 
   const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate || birthdate;
-    setBirthdate(currentDate);
+    if (Platform.OS === 'android') {
+      setShowPicker(false);
+    }
+    setTempDate(selectedDate || tempDate);
   };
 
-  const showDatePicker = () => {
-    setShowPicker(true);
-  };
-
-  const closeDatePicker = () => {
+  const applyDate = () => {
+    setBirthdate(tempDate);
     setShowPicker(false);
   };
 
@@ -66,8 +58,10 @@ const BirthdayScreen = ({ navigation }) => {
         <Text style={styles.title}>I am born on</Text>
 
         {/* Date Picker Field */}
-        <TouchableOpacity onPress={showDatePicker} style={styles.datePicker}>
-          <Text style={styles.dateText}>{birthdate.toLocaleDateString()}</Text>
+        <TouchableOpacity onPress={() => setShowPicker(true)} style={styles.datePicker}>
+          <Text style={styles.dateText}>
+            {birthdate ? birthdate.toLocaleDateString() : 'Select your birthdate'}
+          </Text>
         </TouchableOpacity>
 
         {/* Modal for Date Picker */}
@@ -75,25 +69,25 @@ const BirthdayScreen = ({ navigation }) => {
           visible={showPicker}
           transparent={true}
           animationType="slide"
-          onRequestClose={closeDatePicker}
+          onRequestClose={() => setShowPicker(false)}
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               {Platform.OS === 'ios' && (
-                <TouchableOpacity onPress={closeDatePicker} style={{ alignSelf: 'flex-end' }}>
+                <TouchableOpacity onPress={applyDate} style={{ alignSelf: 'flex-end' }}>
                   <Text style={styles.doneButton}>Done</Text>
                 </TouchableOpacity>
               )}
               <DateTimePicker
-                value={birthdate}
+                value={tempDate || new Date()}
                 mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
                 onChange={onChange}
-                maximumDate={maximumDate} // Minimum age 18 years
-                minimumDate={minimumDate} // Allow up to 100 years old
+                maximumDate={maximumDate}
+                minimumDate={minimumDate}
               />
               {Platform.OS === 'android' && (
-                <Button title="Done" onPress={closeDatePicker} />
+                <Button title="Done" onPress={applyDate} />
               )}
             </View>
           </View>
@@ -103,7 +97,7 @@ const BirthdayScreen = ({ navigation }) => {
         <TouchableOpacity
           style={[styles.continueButton, { opacity: birthdate ? 1 : 0.5 }]}
           onPress={handleContinue}
-          disabled={!birthdate}
+          disabled={!birthdate} // Кнопка неактивна, если дата не выбрана
         >
           <Text style={styles.buttonText}>Continue</Text>
         </TouchableOpacity>

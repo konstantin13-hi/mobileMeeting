@@ -4,7 +4,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { getLocales } from 'expo-localization';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useLocationPermission } from '../LocationPermissionContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'react-native';
 import{ChatIcon} from '../icons/ChatIcon';

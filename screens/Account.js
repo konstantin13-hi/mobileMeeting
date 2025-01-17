@@ -1,6 +1,5 @@
 import React, { useState , useEffect} from 'react';
 import { Text, View, Button, Switch, StyleSheet, TouchableOpacity,FlatList ,ScrollView,Modal,ActivityIndicator,SafeAreaView} from 'react-native';
-import Language from './Language';
 import useHookAuth from '../hooks/useAuth';
 import { Image } from 'react-native';
 import Trash from '../components/Trash';
@@ -24,6 +23,7 @@ const Account = ({ navigation }) => {
   const [language, setLanguage] = useState('english');
   const [darkMode, setDarkMode] = useState(false);
   const { logout } = useHookAuth();
+  const [isDeleting, setIsDeleting] = useState(false); // Индикатор удаления
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImageUri, setSelectedImageUri] = useState(null);
   const [imageUrls, setImageUrls] = useState([]); 
@@ -116,46 +116,49 @@ const Account = ({ navigation }) => {
   };
 
   const handleDeleteAccount = async () => {
+    setIsDeleting(true); // Начало удаления
     try {
       if (!user) {
         Alert.alert("Error", "User is not logged in.");
         return;
       }
-  
-       // Удалить фотографии из Storage
-       if (imageUrls.length > 0) {
+
+      // Удалить фотографии из Storage
+      if (imageUrls.length > 0) {
         for (const photo of imageUrls) {
-          await deleteUserPhoto(user.uid, photo); // Удаляем каждую фотографию
+          await deleteUserPhoto(user.uid, photo);
         }
       }
-  
+
       // Удалить данные пользователя из Firestore
       const userDocRef = doc(db, "users", user.uid);
       await deleteDoc(userDocRef);
-  
+
       // Удалить все записи из matches
       const matchesQuery = query(
         collection(db, "matches"),
         where("usersMatched", "array-contains", user.uid)
       );
-  
+
       const matchesSnapshot = await getDocs(matchesQuery);
       for (const match of matchesSnapshot.docs) {
         await deleteDoc(match.ref);
       }
-  
+
       // Удалить аккаунт из Firebase Auth
       if (auth.currentUser) {
-        await deleteUser(auth.currentUser);
+        await auth.currentUser.delete();
       } else {
         throw new Error("No authenticated user found.");
       }
-  
+
       Alert.alert("Account Deleted", "Your account has been successfully deleted.");
       navigation.navigate("Login"); // Перенаправить на экран входа
     } catch (error) {
       console.error("Error deleting account:", error);
       Alert.alert("Error", "An error occurred while deleting your account.");
+    } finally {
+      setIsDeleting(false); // Завершение удаления
     }
   };
   
@@ -272,11 +275,6 @@ const Account = ({ navigation }) => {
                   {/* Передаём handleRangeChange как проп */}
                   <RangeSelector userId={user.uid}/>
                 
-           
-              <View style={styles.setting}>
-                <Text>Select Theme:</Text>
-                <Switch value={darkMode} onValueChange={() => setDarkMode(!darkMode)} />
-              </View>
               <TouchableOpacity onPress={logout}>
                 <View style={styles.logoutButton}>
                   <Text>Log out</Text>
@@ -286,6 +284,14 @@ const Account = ({ navigation }) => {
             </View>
           )}
         />
+      )}
+
+      {/* Индикатор загрузки для удаления */}
+      {isDeleting && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#ffc107" />
+          <Text style={styles.loadingText}>Deleting Account...</Text>
+        </View>
       )}
 
       {/* Modal */}
@@ -422,6 +428,22 @@ const styles = StyleSheet.create({
   addPhotoText: {
     fontSize: 30,
     color: 'white',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 18,
+    color: '#ffc107',
+    fontWeight: 'bold',
   },
 });
 
